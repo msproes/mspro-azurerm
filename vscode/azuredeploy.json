@@ -25,7 +25,6 @@
   },
   "variables": {
     "vartest": "[concat(uniqueString(resourceGroup().id),'standardsa')]",
-
     "storageAccountName": "[concat(uniquestring(resourceGroup().id), 'standardsa')]"
   },
   "resources": [
