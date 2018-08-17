@@ -2,12 +2,6 @@
   "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
   "contentVersion": "1.0.0.0",
   "parameters": {
-    "tenantId": {
-      "type": "string",
-      "metadata": {
-        "description": "Tenant Id for the subscription and use assigned access to the vault. Available from the Get-AzureRMSubscription PowerShell cmdlet"
-      }
-    },
     "keyVaultName": {
       "type": "string",
       "metadata": {
@@ -41,12 +35,14 @@
         "description": "Location for all resources."
       }
     }
+
   },
   "variables": {
     "storageAccountName": "[concat(parameters('namesPrefix'),'2storageacc')]",
     "batchAccountName": "[concat(parameters('namesPrefix'),'2batchacc')]",
     "storageResourceId": "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]",
-    "storageApiVersion": "[providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]]"
+    "storageApiVersion": "[providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]]",
+    "batchSecretName": "[concat(parameters('namesPrefix'),'2batchSecret')]"
   },
   "resources": [
     {
