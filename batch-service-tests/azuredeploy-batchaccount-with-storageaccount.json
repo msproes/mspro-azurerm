@@ -42,7 +42,8 @@
     "batchAccountName": "[concat(parameters('namesPrefix'),'2batchacc')]",
     "storageResourceId": "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]",
     "storageApiVersion": "[providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]]",
-    "batchSecretName": "[concat(parameters('namesPrefix'),'2batchSecret')]"
+    "batchSecretName": "[concat(parameters('namesPrefix'),'2batchSecret')]",
+    "keyVaultResourceId": "[resourceId('Microsoft.KeyVault/vaults', parameters('keyVaultName'))]"
   },
   "resources": [
     {
@@ -99,6 +100,11 @@
     "batchObject": {
       "type": "object",
       "value": "[reference(resourceId('Microsoft.Batch/batchAccounts', variables('batchAccountName')))]"
+    },
+    "keyVaultResourceId": {
+      "type": "string",
+      "value": "[variables('keyVaultResourceId')]"
     }
+
   }
   }
