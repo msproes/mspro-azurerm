@@ -11,11 +11,36 @@
     "secretName": {
       "value": "secreto01"
     },
+    "secretValue": {
+      "value": "[reference(parameters('adminPassword')]"
+    },
     "instanceCount": {
       "value": 1
     },
     "adminUsername": {
       "value": "admspro"
+    },
+    "adminPassword": {
+      "reference": {
+        "keyVault": {
+          "id": "/subscriptions/20a54399-d893-4069-a673-a3722808438d/resourceGroups/batch-rg/providers/Microsoft.KeyVault/vaults/bskv01"
+        },
+        "secretName": "examplesecret"
+      }
+    },
+    "secretsObject": {
+      "value": {
+        "secrets": [
+          {
+            "secretName": "exampleSecret1",
+            "secretValue": "secretVaule1"
+          },
+          {
+            "secretName": "exampleSecret2",
+            "secretValue": "secretValue2"
+          }
+        ]
+      }
     }
   }
 }
