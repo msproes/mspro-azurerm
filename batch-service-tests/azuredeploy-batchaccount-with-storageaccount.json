@@ -2,17 +2,18 @@
   "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
   "contentVersion": "1.0.0.0",
   "parameters": {
+    "bssName": {
+      "type": "string",
+      "metadata": {
+        "description": "DNS name used for public IP addresses and as base for naming other resources. Must be globally unique and 3 to 61 characters long."
+      },
+      "minLength": 3,
+      "maxLength": 61
+    },
     "keyVaultName": {
       "type": "string",
       "metadata": {
         "description": "Name of the Key Vault"
-      }
-    },
-    "namesPrefix": {
-      "type": "string",
-      "defaultValue": null,
-      "metadata": {
-        "description": "Names string prefix"
       }
     },
     "storageAccountsku": {
@@ -38,14 +39,15 @@
 
   },
   "variables": {
-    "storageAccountName": "[concat(parameters('namesPrefix'),'2storageacc')]",
+    "longNamingInfix": "[toLower(parameters('bssName'))]",
+    "namingInfix": "[toLower(substring(concat(parameters('bssName'), uniqueString(resourceGroup().id)), 0, 9))]",
+    "storageAccountName": "[concat(variables('namingInfix'), 'sa')]",
     "storageResourceId": "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]",
     "storageApiVersion": "[providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]]",
-
-    "batchAccountName": "[concat(parameters('namesPrefix'),'2batchacc')]",
+    "batchAccountName": "[concat(variables('namingInfix'), 'ba')]",
     "batchResourceId": "[resourceId('Microsoft.Batch/batchAccounts', variables('batchAccountName'))]",
     "batchApiVersion": "[providers('Microsoft.Batch', 'batchAccounts').apiVersions[0]]",
-    "batchSecretName": "[concat(parameters('namesPrefix'),'2batchSecret')]",
+    "batchSecretName": "[concat(parameters('bssName'),'2batchSecret')]",
 
     "keyVaultResourceId": "[resourceId('Microsoft.KeyVault/vaults', parameters('keyVaultName'))]"
   },
