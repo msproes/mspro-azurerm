@@ -83,31 +83,42 @@
         "description": "Size for the Virtual Machines used in the Batch Account Pool"
       }
     },
-      "serverType": {
-        "type": "object",
-        "defaultValue": {
-          "name": "batchServersAllowed",
-          "UbuntuServer": [
-            {
-              "name": "UB1604",
-              "publisher": "Canonical",
-              "offer": "UbuntuServer",
-              "sku": "16.04.0-LTS",
-              "nodeAgentSkuId": "batch.node.ubuntu 16.04"
-            }
-          ],
-          "WindowsServer": [
-            {
-              "name": "WS2016",
-              "publisher": "MicrosoftWindowsServer",
-              "offer": "WindowsServer",
-              "sku": "2016-Datacenter-smalldisk",
-              "nodeAgentSkuId": "batch.node.windows amd64"
-            }
-          ]
-        }
+    "vmOSType": {
+      "type": "string",
+      "defaultValue": "UbuntuServer",
+      "allowedValues": [
+        "UbuntuServer",
+        "WindowsServer"
+      ],
+      "metadata": {
+        "description": "OS Type for the Virtual Machines used in the Batch Account Pool"
       }
     },
+    "serverType": {
+      "type": "object",
+      "defaultValue": {
+        "name": "batchServersAllowed",
+        "UbuntuServer": [
+          {
+            "name": "UB1604",
+            "publisher": "Canonical",
+            "offer": "UbuntuServer",
+            "sku": "16.04.0-LTS",
+            "nodeAgentSkuId": "batch.node.ubuntu 16.04"
+          }
+        ],
+        "WindowsServer": [
+          {
+            "name": "WS2016",
+            "publisher": "MicrosoftWindowsServer",
+            "offer": "WindowsServer",
+            "sku": "2016-Datacenter-smalldisk",
+            "nodeAgentSkuId": "batch.node.windows amd64"
+          }
+        ]
+      }
+    }
+  },
   "variables": {
     "longNamingInfix": "[toLower(parameters('bsName'))]",
     "namingInfix": "[toLower(substring(concat(parameters('bsName'), uniqueString(resourceGroup().id)), 0, 9))]",
@@ -173,12 +184,12 @@
         "deploymentConfiguration": {
           "virtualMachineConfiguration": {
             "imageReference": {
-              "publisher": "[parameters('serverType').WindowsServer[0].publisher]",
-              "offer": "[parameters('serverType').WindowsServer[0].offer]",
-              "sku": "[parameters('serverType').WindowsServer[0].sku]",
+              "publisher": "[parameters('serverType').[parameters('vmOSType')][0].publisher]",
+              "offer": "[parameters('serverType').[parameters('vmOSType')][0].offer]",
+              "sku": "[parameters('serverType').[parameters('vmOSType')][0].sku]",
               "version": "latest"
             },
-            "nodeAgentSkuId": "[parameters('serverType').WindowsServer[0].nodeAgentSkuId]"
+            "nodeAgentSkuId": "[parameters('serverType').[parameters('vmOSType')][0].nodeAgentSkuId]"
           }
         },
         "scaleSettings": {
