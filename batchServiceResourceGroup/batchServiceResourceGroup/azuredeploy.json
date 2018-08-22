@@ -5,42 +5,42 @@
     "bsName": {
       "type": "string",
       "metadata": {
-        "description": "DNS name used for public IP addresses and as base for naming other resources. Must be globally unique and 3 to 61 characters long."
+        "description": "Prefix Base for naming other resources. Must be globally unique and 3 to 61 characters long."
       },
       "minLength": 3,
       "maxLength": 61
     },
-    "keyVaultResourceGroup": {
-      "type": "string",
-      "defaultValue": "nombreResourceGroupKeyVault"
-    },
-    "keyVaultName": {
-      "type": "string",
-      "metadata": {
-        "description": "Name of the Key Vault"
-      }
-    },
-    "secretName": {
-      "type": "string",
-      "metadata": {
-        "description": "Name of the Secret to write on the Key Vault"
-      },
-      "minLength": 3,
-      "maxLength": 61
-    },
-    "instanceCount": {
+    "poolNodes": {
       "type": "int",
       "metadata": {
-        "description": "Number of VM instances (100 or less)"
+        "description": "Number of Nodes in Pool"
       },
-      "minValue": 1,
+      "minValue": 0,
       "maxValue": 100
     },
+    "userUsername": {
+      "type": "string",
+      "defaultValue": "usr",
+      "minLength": 3,
+      "maxLength": 15,
+      "metadata": {
+        "description": "User username on all VMs"
+      }
+    },
+
     "adminUsername": {
       "type": "string",
-      "minLength": 1,
+      "defaultValue": "adm",
+      "minLength": 3,
+      "maxLength": 15,
       "metadata": {
         "description": "Administrator username on all VMs"
+      }
+    },
+    "userPassword": {
+      "type": "securestring",
+      "metadata": {
+        "description": "User password on all VMs"
       }
     },
     "adminPassword": {
@@ -80,11 +80,21 @@
     "storageResourceId": "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]",
     "storageApiVersion": "[providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]]",
     "batchAccountName": "[concat(variables('namingInfix'), 'ba')]",
-    "batchPoolName": "[concat(variables('namingInfix'), 'bapool')]",
     "batchResourceId": "[resourceId('Microsoft.Batch/batchAccounts', variables('batchAccountName'))]",
     "batchApiVersion": "[providers('Microsoft.Batch', 'batchAccounts').apiVersions[0]]",
     "batchSecretName": "[concat(parameters('bsName'),'2batchSecret')]",
-    "keyVaultResourceId": "[[resourceId(subscription().subscriptionId,  parameters('keyVaultResourceGroup'), 'Microsoft.KeyVault/vaults', parameters('keyVaultName'))]]"
+    "keyVaultResourceId": "[[resourceId(subscription().subscriptionId,  parameters('keyVaultResourceGroup'), 'Microsoft.KeyVault/vaults', parameters('keyVaultName'))]]",
+    "poolName": "[concat(variables('namingInfix'), 'bapool')]",
+    "serverPublisher": "Canonical",
+    "serverOffer": "UbuntuServer",
+    "serverSku": "16.04.0-LTS",
+    "serverSize": "Standard_A2_v2",
+    "serverNodeAgent": "batch.node.ubuntu 16.04",
+    "poolDedicatedNodes": "[parameters('poolNodes')]",
+    "poolLowPriNodes": "[parameters('poolNodes')]",
+    "defaultKeyVault": {
+        "id": "/subscriptions/20a54399-d893-4069-a673-a3722808438d/resourceGroups/batch-rg/providers/Microsoft.KeyVault/vaults/bskv01"
+     }
   },
   "resources": [
     {
@@ -120,51 +130,44 @@
       ]
     },
     {
-      "name": "[variables('batchPoolName')]",
       "type": "Microsoft.Batch/batchAccounts/pools",
+      "name": "[concat(variables('batchAccountName'), '/', variables('poolName'))]",
       "apiVersion": "2017-09-01",
       "properties": {
-        "displayName": "pool01",
-        "vmSize": "standard_a1",
+        "displayName": "[variables('poolName')]",
+        "vmSize": "[variables('serverSize')]",
         "deploymentConfiguration": {
-          "cloudServiceConfiguration": {
-            "osFamily": "5"
+          "virtualMachineConfiguration": {
+            "imageReference": {
+              "publisher": "[variables('serverPublisher')]",
+              "offer": "[variables('serverOffer')]",
+              "sku": "[variables('serverSku')]",
+              "version": "latest"
+            },
+            "nodeAgentSkuId": "[variables('serverNodeAgent')]"
           }
         },
         "scaleSettings": {
           "fixedScale": {
-            "resizeTimeout": "PT15M",
-            "targetDedicatedNodes": 0,
-            "targetLowPriorityNodes": 0
+            "targetDedicatedNodes": "[variables('poolDedicatedNodes')]",
+            "targetLowPriorityNodes": "[variables('poolLowPriNodes')]"
           }
         },
-        "interNodeCommunication": "Enabled",
-        "maxTasksPerNode": 1,
-        "taskSchedulingPolicy": {
-          "nodeFillType": "Pack"
-        },
-
-        "enableAutoScale": false,
-        "enableInterNodeCommunication": false,
         "userAccounts": [
           {
-            "name": "usr",
-            "password": "Passw0rd",
+            "name": "[parameters('userUserName')]",
+            "password": "[parameters('userPassword')]",
             "elevationLevel": "NonAdmin"
           },
           {
-            "name": "adm",
-            "password": "Passw0rd",
+            "name": "[parameters('adminUserName')]",
+            "password": "[parameters('adminPassword')]",
             "elevationLevel": "Admin"
           }
-        ],
-
-        "certificates": [],
-        "applicationPackages": [],
-        "applicationLicenses": []
+        ]
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Batch/batchAccounts', variables('batchAccountName'))]"
+        "[concat('Microsoft.Batch/batchAccounts/', variables('batchAccountName'))]"
       ]
     }
   ],
@@ -198,6 +201,5 @@
       "type": "string",
       "value": "[listKeys(variables('batchResourceId'), variables('batchApiVersion')).primary]"
     }
-
   }
   }
