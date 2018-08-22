@@ -2,14 +2,14 @@
   "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
   "contentVersion": "1.0.0.0",
   "parameters": {
-    "bsName": {
-      "value": "bss02"
-    },
     "instanceCount": {
-      "value": 1
+      "value": 0
+    },
+    "userUsername": {
+      "value": "usr"
     },
     "adminUsername": {
-      "value": "admspro"
+      "value": "adm"
     },
     "adminPassword": {
       "reference": {
@@ -19,8 +19,14 @@
         "secretName": "secretAdminPassword"
       }
     },
-    "secretName": {
-      "value": "secretAdminPassword"
+    "userPassword": {
+      "reference": {
+        "keyVault": {
+          "id": "/subscriptions/20a54399-d893-4069-a673-a3722808438d/resourceGroups/batch-rg/providers/Microsoft.KeyVault/vaults/bskv01"
+        },
+        "secretName": "secretAdminPassword"
+      }
     }
+
   }
 }
