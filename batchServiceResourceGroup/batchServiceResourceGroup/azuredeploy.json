@@ -184,12 +184,12 @@
         "deploymentConfiguration": {
           "virtualMachineConfiguration": {
             "imageReference": {
-              "publisher": "[parameters('serverType').[parameters('vmOSType')][0].publisher]",
-              "offer": "[parameters('serverType').[parameters('vmOSType')][0].offer]",
-              "sku": "[parameters('serverType').[parameters('vmOSType')][0].sku]",
+              "publisher": "[parameters('serverType').parameters('vmOSType')[0].publisher]",
+              "offer": "[parameters('serverType').parameters('vmOSType')[0].offer]",
+              "sku": "[parameters('serverType').parameters('vmOSType')[0].sku]",
               "version": "latest"
             },
-            "nodeAgentSkuId": "[parameters('serverType').[parameters('vmOSType')][0].nodeAgentSkuId]"
+            "nodeAgentSkuId": "[parameters('serverType').parameters('vmOSType')[0].nodeAgentSkuId]"
           }
         },
         "scaleSettings": {
