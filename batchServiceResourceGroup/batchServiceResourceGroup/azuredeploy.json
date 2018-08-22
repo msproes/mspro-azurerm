@@ -4,8 +4,9 @@
   "parameters": {
     "bsName": {
       "type": "string",
+      "defaultValue": "[ResourceGroup().name]",
       "metadata": {
-        "description": "Prefix Base for naming other resources. Must be globally unique and 3 to 61 characters long."
+        "description": "Prefix Base for naming all the resources. Must be globally unique and 3 to 61 characters long."
       },
       "minLength": 3,
       "maxLength": 61
