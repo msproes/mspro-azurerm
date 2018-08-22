@@ -3,16 +3,7 @@
   "contentVersion": "1.0.0.0",
   "parameters": {
     "bsName": {
-      "value": "batch01"
-    },
-    "keyVaultName": {
-      "value": "kv01"
-    },
-    "secretName": {
-      "value": "secreto01"
-    },
-    "secretValue": {
-      "value": "[reference(parameters('adminPassword')]"
+      "value": "bss02"
     },
     "instanceCount": {
       "value": 1
@@ -26,20 +17,6 @@
           "id": "/subscriptions/20a54399-d893-4069-a673-a3722808438d/resourceGroups/batch-rg/providers/Microsoft.KeyVault/vaults/bskv01"
         },
         "secretName": "secretAdminPassword"
-      }
-    },
-    "secretsObject": {
-      "value": {
-        "secrets": [
-          {
-            "secretName": "exampleSecret1",
-            "secretValue": "secretVaule1"
-          },
-          {
-            "secretName": "exampleSecret2",
-            "secretValue": "secretValue2"
-          }
-        ]
       }
     }
   }
