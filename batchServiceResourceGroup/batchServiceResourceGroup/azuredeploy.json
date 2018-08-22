@@ -13,6 +13,7 @@
     },
     "poolNodes": {
       "type": "int",
+      "defaultValue": 0,
       "metadata": {
         "description": "Number of Nodes in Pool"
       },
