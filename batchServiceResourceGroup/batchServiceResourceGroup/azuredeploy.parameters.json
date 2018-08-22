@@ -26,6 +26,30 @@
         },
         "secretName": "secretAdminPassword"
       }
+    },
+	"serverType":{
+	"value":{
+	  "name":"batchServersAllowed",
+      "UbuntuServer": [
+          {
+              "name": "UB1604",
+              "publisher": "Canonical",
+              "offer":"UbuntuServer",
+              "sku":"16.04.0-LTS",
+              "nodeAgentSkuId":"batch.node.ubuntu 16.04"
+          }
+      ],
+      "WindowsServer":[
+          {
+              "name": "WS2016",
+              "serverPublisher": "MicrosoftWindowsServer",
+              "serverOffer":"WindowsServer",
+              "serverSku":"2016-Datacenter-smalldisk",
+              "serverNodeAgent":"batch.node.windows amd64"
+          }
+      ]
+	  }
+  
     }
 
   }

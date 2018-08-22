@@ -68,12 +68,66 @@
     "location": {
       "type": "string",
       "defaultValue": "[resourceGroup().location]",
+      "allowedValues": [
+        "eastasia",
+        "southeastasia",
+        "centralus",
+        "eastus",
+        "eastus2",
+        "westus",
+        "northcentralus",
+        "southcentralus",
+        "northeurope",
+        "westeurope",
+        "japanwest",
+        "japaneast",
+        "brazilsouth",
+        "australiaeast",
+        "australiasoutheast",
+        "southindia",
+        "centralindia",
+        "westindia",
+        "canadacentral",
+        "canadaeast",
+        "uksouth",
+        "ukwest",
+        "westcentralus",
+        "westus2",
+        "koreacentral",
+        "koreasouth",
+        "francecentral",
+        "francesouth",
+        "australiacentral",
+        "australiacentral2"
+      ],
       "metadata": {
         "description": "Location for all resources."
       }
+    },
+    "serverType":{
+      "type":"object",
+      "defaultValue": {
+        "name":"batchServersAllowed",
+          "UbuntuServer": [
+              {
+                  "name": "UB1604",
+                  "publisher": "Canonical",
+                  "offer":"UbuntuServer",
+                  "sku":"16.04.0-LTS",
+                  "nodeAgentSkuId":"batch.node.ubuntu 16.04"
+              }
+          ],
+          "WindowsServer":[
+              {
+                  "name": "WS2016",
+                  "serverPublisher": "MicrosoftWindowsServer",
+                  "serverOffer":"WindowsServer",
+                  "serverSku":"2016-Datacenter-smalldisk",
+                  "serverNodeAgent":"batch.node.windows amd64"
+              }
+          ]
+        }
     }
-
-
   },
   "variables": {
     "longNamingInfix": "[toLower(parameters('bsName'))]",
@@ -90,13 +144,13 @@
     "serverPublisher": "Canonical",
     "serverOffer": "UbuntuServer",
     "serverSku": "16.04.0-LTS",
-    "serverSize": "Standard_A2_v2",
     "serverNodeAgent": "batch.node.ubuntu 16.04",
+    "vmSize": "Standard_A2_v2",
     "poolDedicatedNodes": "[parameters('poolNodes')]",
     "poolLowPriNodes": "[parameters('poolNodes')]",
     "defaultKeyVault": {
-        "id": "/subscriptions/20a54399-d893-4069-a673-a3722808438d/resourceGroups/batch-rg/providers/Microsoft.KeyVault/vaults/bskv01"
-     }
+          "id": "/subscriptions/20a54399-d893-4069-a673-a3722808438d/resourceGroups/batch-rg/providers/Microsoft.KeyVault/vaults/bskv01"
+      }
   },
   "resources": [
     {
@@ -137,16 +191,16 @@
       "apiVersion": "2017-09-01",
       "properties": {
         "displayName": "[variables('poolName')]",
-        "vmSize": "[variables('serverSize')]",
+        "vmSize": "[variables('vmSize')]",
         "deploymentConfiguration": {
           "virtualMachineConfiguration": {
             "imageReference": {
-              "publisher": "[variables('serverPublisher')]",
-              "offer": "[variables('serverOffer')]",
-              "sku": "[variables('serverSku')]",
+              "publisher": "[parameters('serverType').UbuntuServer[0].publisher]",
+              "offer": "[parameters('serverType').UbuntuServer[0].offer]",
+              "sku": "[parameters('serverType').UbuntuServer[0].sku]",
               "version": "latest"
             },
-            "nodeAgentSkuId": "[variables('serverNodeAgent')]"
+            "nodeAgentSkuId": "[parameters('serverType').UbuntuServer[0].nodeAgentSkuId]"
           }
         },
         "scaleSettings": {

@@ -1,0 +1,29 @@
+"parameters":{
+    "serverType":{
+        "value":{
+            "UbuntuServer": [
+                {
+                    "name": "UB1604",
+                    "serverPublisher": "Canonical",
+                    "serverOffer":"UbuntuServer",
+                    "serverSku":"16.04.0-LTS",
+                    "serverNodeAgent":"batch.node.ubuntu 16.04"
+                }
+            ],
+            "WindowsServer":[
+                {
+                    "name": "WS2016",
+                    "serverPublisher": "MicrosoftWindowsServer",
+                    "serverOffer":"WindowsServer",
+                    "serverSku":"2016-Datacenter-smalldisk",
+                    "serverNodeAgent":"batch.node.windows amd64"
+                }
+            ]
+        }
+    }
+}
+"serverPublisher": "Canonical",
+"serverOffer": "UbuntuServer",
+"serverSku": "16.04.0-LTS",
+"vmSize": "Standard_A2_v2",
+"serverNodeAgent": "batch.node.ubuntu 16.04"
