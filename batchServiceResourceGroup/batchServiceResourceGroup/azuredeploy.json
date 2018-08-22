@@ -80,28 +80,13 @@
     "storageResourceId": "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]",
     "storageApiVersion": "[providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]]",
     "batchAccountName": "[concat(variables('namingInfix'), 'ba')]",
+    "batchPoolName": "[concat(variables('namingInfix'), 'bapool')]",
     "batchResourceId": "[resourceId('Microsoft.Batch/batchAccounts', variables('batchAccountName'))]",
     "batchApiVersion": "[providers('Microsoft.Batch', 'batchAccounts').apiVersions[0]]",
     "batchSecretName": "[concat(parameters('bsName'),'2batchSecret')]",
     "keyVaultResourceId": "[[resourceId(subscription().subscriptionId,  parameters('keyVaultResourceGroup'), 'Microsoft.KeyVault/vaults', parameters('keyVaultName'))]]"
   },
   "resources": [
-    {
-      "comments": "Generalized from resource: '/subscriptions/20a54399-d893-4069-a673-a3722808438d/resourceGroups/batch-rg/providers/Microsoft.KeyVault/vaults/bskv01/secrets/secretAdminPassword'.",
-      "type": "Microsoft.KeyVault/vaults/secrets",
-      "name": "[concat(parameters('keyVaultName'), '/', parameters('secretName'))]",
-      "apiVersion": "2016-10-01",
-      "location": "westeurope",
-      "scale": null,
-      "properties": {
-        "attributes": {
-          "enabled": true
-        }
-      },
-      "reference": [
-        "[resourceId(subscription().subscriptionId,  parameters('keyVaultResourceGroup'), 'Microsoft.KeyVault/vaults', parameters('keyVaultName'))]"
-      ]
-    },
     {
       "type": "Microsoft.Storage/storageAccounts",
       "name": "[variables('storageAccountname')]",
@@ -132,6 +117,54 @@
       },
       "dependsOn": [
         "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]"
+      ]
+    },
+    {
+      "name": "[variables('batchPoolName')]",
+      "type": "Microsoft.Batch/batchAccounts/pools",
+      "apiVersion": "2017-09-01",
+      "properties": {
+        "displayName": "pool01",
+        "vmSize": "standard_a1",
+        "deploymentConfiguration": {
+          "cloudServiceConfiguration": {
+            "osFamily": "5"
+          }
+        },
+        "scaleSettings": {
+          "fixedScale": {
+            "resizeTimeout": "PT15M",
+            "targetDedicatedNodes": 0,
+            "targetLowPriorityNodes": 0
+          }
+        },
+        "interNodeCommunication": "Enabled",
+        "maxTasksPerNode": 1,
+        "taskSchedulingPolicy": {
+          "nodeFillType": "Pack"
+        },
+
+        "enableAutoScale": false,
+        "enableInterNodeCommunication": false,
+        "userAccounts": [
+          {
+            "name": "usr",
+            "password": "Passw0rd",
+            "elevationLevel": "NonAdmin"
+          },
+          {
+            "name": "adm",
+            "password": "Passw0rd",
+            "elevationLevel": "Admin"
+          }
+        ],
+
+        "certificates": [],
+        "applicationPackages": [],
+        "applicationLicenses": []
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Batch/batchAccounts', variables('batchAccountName'))]"
       ]
     }
   ],
