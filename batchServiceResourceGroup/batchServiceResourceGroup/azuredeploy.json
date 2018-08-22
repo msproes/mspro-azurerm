@@ -86,13 +86,13 @@
               }
           ],
           "WindowsServer":[
-              {
-                  "name": "WS2016",
-                  "serverPublisher": "MicrosoftWindowsServer",
-                  "serverOffer":"WindowsServer",
-                  "serverSku":"2016-Datacenter-smalldisk",
-                  "serverNodeAgent":"batch.node.windows amd64"
-              }
+            {
+              "name": "WS2016",
+              "publisher": "MicrosoftWindowsServer",
+              "offer": "WindowsServer",
+              "sku": "2016-Datacenter-smalldisk",
+              "nodeAgentSkuId": "batch.node.windows amd64"
+            }
           ]
         }
     }
