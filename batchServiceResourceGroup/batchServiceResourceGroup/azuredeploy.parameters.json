@@ -25,7 +25,7 @@
         "keyVault": {
           "id": "/subscriptions/20a54399-d893-4069-a673-a3722808438d/resourceGroups/batch-rg/providers/Microsoft.KeyVault/vaults/bskv01"
         },
-        "secretName": "examplesecret"
+        "secretName": "secretAdminPassword"
       }
     },
     "secretsObject": {
