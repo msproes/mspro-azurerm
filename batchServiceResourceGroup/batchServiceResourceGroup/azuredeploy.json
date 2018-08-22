@@ -112,29 +112,32 @@
           "nodeAgentSkuId": "batch.node.windows amd64"
         }
       ]
-      }
-    },
+    }
+  },
   "variables": {
     "longNamingInfix": "[toLower(parameters('bsName'))]",
-    "namingInfix": "[toLower(substring(concat(parameters('bsName'), uniqueString(resourceGroup().id)), 0, 9))]",
-    "storageAccountName": "[concat(variables('namingInfix'), 'sa')]",
+    "namingInfix": "substring(concat(parameters('bsName'), uniqueString(resourceGroup().id)), 0, 13)]",
+    "storageAccountSuffix": "storageacc",
+    "storageAccountName": "[toLower(concat(variables('namingInfix'), substring(variables('storageAccountSuffix'),0,9)))]",
     "storageResourceId": "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]",
     "storageApiVersion": "[providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]]",
-    "batchAccountName": "[concat(variables('namingInfix'), 'ba')]",
+    "batchAccountSuffix": "batchacc",
+    "batchAccountName": "[toLower(concat(variables('namingInfix'), substring(variables('batchAccountSuffix'),0,9)))]",
     "batchResourceId": "[resourceId('Microsoft.Batch/batchAccounts', variables('batchAccountName'))]",
     "batchApiVersion": "[providers('Microsoft.Batch', 'batchAccounts').apiVersions[0]]",
     "batchSecretName": "[concat(parameters('bsName'),'2batchSecret')]",
     "keyVaultResourceId": "[[resourceId(subscription().subscriptionId,  parameters('keyVaultResourceGroup'), 'Microsoft.KeyVault/vaults', parameters('keyVaultName'))]]",
     "poolName": "[concat(variables('namingInfix'), 'bapool')]",
-    "serverPublisher": "Canonical",
-    "serverOffer": "UbuntuServer",
-    "serverSku": "16.04.0-LTS",
-    "serverNodeAgent": "batch.node.ubuntu 16.04",
+    "poolVmPublisher": "[parameters('serverType')[variables('vmOSTypeIndex')].publisher]",
+    "poolVmOffer": "[parameters('serverType')[variables('vmOSTypeIndex')].offer]",
+    "poolVmSku": "[parameters('serverType')[variables('vmOSTypeIndex')].sku]",
+    "poolVmNodeAgentSkuId": "[parameters('serverType')[variables('vmOSTypeIndex')].nodeAgentSkuId]",
     "poolDedicatedNodes": "[parameters('poolNodes')]",
     "poolLowPriNodes": "[parameters('poolNodes')]",
     "defaultKeyVault": {
-          "id": "/subscriptions/20a54399-d893-4069-a673-a3722808438d/resourceGroups/batch-rg/providers/Microsoft.KeyVault/vaults/bskv01"
-      }
+      "id": "/subscriptions/20a54399-d893-4069-a673-a3722808438d/resourceGroups/batch-rg/providers/Microsoft.KeyVault/vaults/bskv01"
+    },
+    "vmOSTypeIndex": "[substring(parameters('vmOSType'),1)]"
   },
   "resources": [
     {
@@ -179,12 +182,12 @@
         "deploymentConfiguration": {
           "virtualMachineConfiguration": {
             "imageReference": {
-              "publisher": "[parameters('serverType')[first(parameters('vmOSType'))].publisher]",
-              "offer": "[parameters('serverType')[first(parameters('vmOSType'))].offer]",
-              "sku": "[parameters('serverType')[first(parameters('vmOSType'))].sku]",
+              "publisher": "[variables('poolVmPublisher')]",
+              "offer": "[variables('poolVmOffer')]",
+              "sku": "[variables('poolVmSku')]",
               "version": "latest"
             },
-            "nodeAgentSkuId": "[parameters('serverType')[first(parameters('vmOSType'))].nodeAgentSkuId]"
+            "nodeAgentSkuId": "[variables('poolVmNodeAgentSkuId')]"
           }
         },
         "scaleSettings": {
