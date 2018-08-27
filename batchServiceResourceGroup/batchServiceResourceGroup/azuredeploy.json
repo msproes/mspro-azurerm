@@ -119,21 +119,21 @@
     },
     "vmOSTypeIndex": "[int(first(parameters('vmOSType')))]",
     "vmTypes": [
-        {
-          "name": "UB1604",
-          "publisher": "Canonical",
-          "offer": "UbuntuServer",
-          "sku": "16.04.0-LTS",
-          "nodeAgentSkuId": "batch.node.ubuntu 16.04"
-        },
-        {
-          "name": "WS2016",
-          "publisher": "MicrosoftWindowsServer",
-          "offer": "WindowsServer",
-          "sku": "2016-Datacenter-smalldisk",
-          "nodeAgentSkuId": "batch.node.windows amd64"
-        }
-      ]
+      {
+        "name": "UB1604",
+        "publisher": "Canonical",
+        "offer": "UbuntuServer",
+        "sku": "16.04.0-LTS",
+        "nodeAgentSkuId": "batch.node.ubuntu 16.04"
+      },
+      {
+        "name": "WS2016",
+        "publisher": "MicrosoftWindowsServer",
+        "offer": "WindowsServer",
+        "sku": "2016-Datacenter-smalldisk",
+        "nodeAgentSkuId": "batch.node.windows amd64"
+      }
+    ]
   },
   "resources": [
     {
