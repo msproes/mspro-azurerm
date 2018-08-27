@@ -107,12 +107,12 @@
       "allowedValues": [
         "0 - UbuntuServer 16.04.0-LTS",
         "1 - WindowsServer 2016-Datacenter-smalldisk",
-        "2 - WindowsServer 2012-R2-Datacenter-smalldisk",
-        "3 - WindowsServer 2016-Datacenter",
+        "2 - WindowsServer 2016-Datacenter",
+        "3 - WindowsServer 2012-R2-Datacenter-smalldisk",
         "4 - WindowsServer 2012-R2-Datacenter"
       ],
       "metadata": {
-        "description": "OS Version used for the Virtual Machines Nodes in Batch Account Pool"
+        "description": "VM OS Image used for the Virtual Machines Nodes in Batch Account Pool"
       }
     }
   },
@@ -154,17 +154,17 @@
         "nodeAgentSkuId": "batch.node.windows amd64"
       },
       {
-        "name": "WS2012R2small",
-        "publisher": "MicrosoftWindowsServer",
-        "offer": "WindowsServer",
-        "sku": "2012-R2-Datacenter-smalldisk",
-        "nodeAgentSkuId": "batch.node.windows amd64"
-      },
-      {
         "name": "WS2016",
         "publisher": "MicrosoftWindowsServer",
         "offer": "WindowsServer",
         "sku": "2016-Datacenter",
+        "nodeAgentSkuId": "batch.node.windows amd64"
+      },
+      {
+        "name": "WS2012R2small",
+        "publisher": "MicrosoftWindowsServer",
+        "offer": "WindowsServer",
+        "sku": "2012-R2-Datacenter-smalldisk",
         "nodeAgentSkuId": "batch.node.windows amd64"
       },
       {
