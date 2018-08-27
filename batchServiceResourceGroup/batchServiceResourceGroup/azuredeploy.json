@@ -85,7 +85,7 @@
     },
     "vmOSType": {
       "type": "string",
-      "defaultValue": "0 - UbuntuServer",
+      "defaultValue": "0 - UbuntuServer 16.04.0-LTS",
       "allowedValues": [
         "0 - UbuntuServer 16.04.0-LTS",
         "1 - WindowsServer 2016-Datacenter-smalldisk",
