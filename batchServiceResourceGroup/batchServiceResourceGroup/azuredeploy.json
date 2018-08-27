@@ -87,8 +87,9 @@
       "type": "string",
       "defaultValue": "0 - UbuntuServer",
       "allowedValues": [
-        "0 - UbuntuServer",
-        "1 - WindowsServer"
+        "0 - UbuntuServer 16.04.0-LTS",
+        "1 - WindowsServer 2016 Datacenter Small Disk",
+        "2 - WindowsServer 2016 Datacenter"
       ],
       "metadata": {
         "description": "OS Version used for the Virtual Machines Nodes in Batch Account Pool"
@@ -107,7 +108,7 @@
     "batchSecretName": "[concat(parameters('bsName'),'2batchSecret')]",
     "keyVaultResourceId": "[[resourceId(subscription().subscriptionId,  parameters('keyVaultResourceGroup'), 'Microsoft.KeyVault/vaults', parameters('keyVaultName'))]]",
     "poolName": "[concat(variables('batchAccountName'), '-Pool01')]",
-    "serverPublisher": "Canonical",
+    "serverPublisher": "variables('serverType')[variables('vmOSTypeIndex')]",
     "serverOffer": "UbuntuServer",
     "serverSku": "16.04.0-LTS",
     "serverNodeAgent": "batch.node.ubuntu 16.04",
@@ -117,7 +118,7 @@
       "id": "/subscriptions/20a54399-d893-4069-a673-a3722808438d/resourceGroups/batch-rg/providers/Microsoft.KeyVault/vaults/bskv01"
     },
     "vmOSTypeIndex": "[int(first(parameters('vmOSType')))]",
-    "serverType": [
+    "vmTypes": [
         {
           "name": "UB1604",
           "publisher": "Canonical",
@@ -177,12 +178,12 @@
         "deploymentConfiguration": {
           "virtualMachineConfiguration": {
             "imageReference": {
-              "publisher": "[variables('serverType')[variables('vmOSTypeIndex')].publisher]",
-              "offer": "[variables('serverType')[variables('vmOSTypeIndex')].offer]",
-              "sku": "[variables('serverType')[variables('vmOSTypeIndex')].sku]",
+              "publisher": "[variables('vmTypes')[variables('vmOSTypeIndex')].publisher]",
+              "offer": "[variables('vmTypes')[variables('vmOSTypeIndex')].offer]",
+              "sku": "[variables('vmTypes')[variables('vmOSTypeIndex')].sku]",
               "version": "latest"
             },
-            "nodeAgentSkuId": "[variables('serverType')[variables('vmOSTypeIndex')].nodeAgentSkuId]"
+            "nodeAgentSkuId": "[variables('vmTypes')[variables('vmOSTypeIndex')].nodeAgentSkuId]"
           }
         },
         "scaleSettings": {
