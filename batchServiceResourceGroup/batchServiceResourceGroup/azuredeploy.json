@@ -2,11 +2,29 @@
   "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
   "contentVersion": "1.0.0.0",
   "parameters": {
-    "bsName": {
+    "baseName": {
       "type": "string",
       "defaultValue": "[ResourceGroup().name]",
       "metadata": {
-        "description": "Prefix Base for naming all the resources. Must be globally unique and 3 to 61 characters long."
+        "description": "Prefix used for naming all the resources. Must be globally unique and 3 to 13 characters long."
+      },
+      "minLength": 3,
+      "maxLength": 61
+    },
+    "batchaccSuffix": {
+      "type": "string",
+      "defaultValue": "batchacc",
+      "metadata": {
+        "description": "Suffix for naming the batch account. Must be globally unique and 3 to 10 characters long."
+      },
+      "minLength": 3,
+      "maxLength": 61
+    },
+    "storageaccSuffix": {
+      "type": "string",
+      "defaultValue": "storageacc",
+      "metadata": {
+        "description": "Suffix for naming the storage account. Must be globally unique and 3 to 10 characters long."
       },
       "minLength": 3,
       "maxLength": 61
@@ -99,15 +117,15 @@
     }
   },
   "variables": {
-    "longNamingInfix": "[toLower(parameters('bsName'))]",
-    "namingInfix": "[toLower(substring(concat(parameters('bsName'), uniqueString(resourceGroup().id)), 0, 13))]",
-    "storageAccountName": "[concat(variables('namingInfix'), 'storageacc')]",
+    "longNamingInfix": "[toLower(parameters('baseName'))]",
+    "namingInfix": "[toLower(substring(concat(parameters('baseName'), uniqueString(resourceGroup().id)), 0, 13))]",
+    "storageAccountName": "[concat(variables('namingInfix'), parameters('storageaccSuffix'))]",
     "storageResourceId": "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]",
     "storageApiVersion": "[providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]]",
-    "batchAccountName": "[concat(variables('namingInfix'), 'batchacc')]",
+    "batchAccountName": "[concat(variables('namingInfix'), parameters('batchaccSuffix'))]",
     "batchResourceId": "[resourceId('Microsoft.Batch/batchAccounts', variables('batchAccountName'))]",
     "batchApiVersion": "[providers('Microsoft.Batch', 'batchAccounts').apiVersions[0]]",
-    "batchSecretName": "[concat(parameters('bsName'),'2batchSecret')]",
+    "batchSecretName": "[concat(parameters('baseName'),'2batchSecret')]",
     "keyVaultResourceId": "[[resourceId(subscription().subscriptionId,  parameters('keyVaultResourceGroup'), 'Microsoft.KeyVault/vaults', parameters('keyVaultName'))]]",
     "poolName": "[concat(variables('batchAccountName'), '-Pool01')]",
     "serverPublisher": "variables('serverType')[variables('vmOSTypeIndex')]",
@@ -265,7 +283,7 @@
     },
     "deploymentUri": {
       "type": "string",
-      "value": "https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fmsproes%2Fmspro-azurerm%2Fvs-resourcegroup-project%2FbatchServiceResourceGroup%2FbatchServiceResourceGroup%2Fazuredeploy.json"
+      "value": "https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fmsproes%2Fmspro-azurerm%2Fmaster%2FbatchServiceResourceGroup%2FbatchServiceResourceGroup%2Fazuredeploy.json"
     }
   }
 }
