@@ -238,7 +238,7 @@
       },
       "kind": "Storage",
       "tags": {
-        "displayName": "StorageAccount"
+        "objectName": "[variables('batchAccountName')]"
       },
       "properties": {}
     },
@@ -248,7 +248,7 @@
       "apiVersion": "2015-12-01",
       "location": "[parameters('location')]",
       "tags": {
-        "displayName": "BatchAccount"
+        "objectName": "[variables('batchAccountName')]"
       },
       "properties": {
         "autoStorage": {
