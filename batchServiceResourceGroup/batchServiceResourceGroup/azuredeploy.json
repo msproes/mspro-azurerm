@@ -261,9 +261,6 @@
       "type": "Microsoft.Batch/batchAccounts/pools",
       "name": "[concat(variables('batchAccountName'), '/', variables('poolName'))]",
       "apiVersion": "2017-09-01",
-      "tags": {
-        "displayName": "BatchAccountPool"
-      },
       "properties": {
         "displayName": "[variables('poolName')]",
         "vmSize": "[parameters('vmSize')]",
