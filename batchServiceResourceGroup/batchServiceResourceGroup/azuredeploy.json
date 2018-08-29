@@ -220,7 +220,7 @@
     },
     "vnetResourceGroup": "[resourceGroup().name]",
     "vnetName": "batch-vnet",
-    "vnetID": "[resourceId(variables('virtualNetworkResourceGroup'),'Microsoft.Network/virtualNetworks'),variables('vnetName')]",
+    "vnetID": "[resourceId(variables('vnetResourceGroup'),'Microsoft.Network/virtualNetworks'),variables('vnetName')]",
     "vnetSubnet1Name": "batch-vnetSubnet1",
     "vnetSubnet1Ref": "[concat(variables('vnetID'),'/subnets/',variables('vnetSubnet1Name'))]"
   },
