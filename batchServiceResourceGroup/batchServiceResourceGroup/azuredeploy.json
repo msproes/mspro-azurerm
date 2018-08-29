@@ -115,14 +115,19 @@
         "description": "VM OS Image used for the Virtual Machines Nodes in Batch Account Pool"
       }
     },
-    "keyVaultResourceGroup": {
-      "type": "string"
-
+    "keyVaultResourceGroupName": {
+      "type": "string",
+      "defaultValue": "[ResourceGroup().name]",
+      "metadata": {
+        "description": "Key Vault resource group name"
+      }
     },
     "keyVaultName": {
       "type": "string",
-      "defaultValue": null
-
+      "defaultValue": "keyVault",
+      "metadata": {
+        "description": "Key Vault name"
+      }
     },
     "AuditLogStorageAccountName": {
       "type": "string",
@@ -201,7 +206,7 @@
     "batchResourceId": "[resourceId('Microsoft.Batch/batchAccounts', variables('batchAccountName'))]",
     "batchApiVersion": "[providers('Microsoft.Batch', 'batchAccounts').apiVersions[0]]",
     "batchSecretName": "[concat(parameters('baseName'),'2batchSecret')]",
-    "keyVaultResourceId": "[[resourceId(subscription().subscriptionId,  parameters('keyVaultResourceGroup'), 'Microsoft.KeyVault/vaults', parameters('keyVaultName'))]]",
+    "keyVaultResourceId": "[[resourceId(subscription().subscriptionId,  parameters('keyVaultResourceGroupName'), 'Microsoft.KeyVault/vaults', parameters('keyVaultName'))]]",
     "poolName": "[concat(variables('batchAccountName'), '-Pool01')]",
     "serverPublisher": "variables('serverType')[variables('vmOSTypeIndex')].publisher",
     "serverOffer": "variables('serverType')[variables('vmOSTypeIndex')].offer",
@@ -210,7 +215,7 @@
     "poolDedicatedNodes": "[parameters('poolNodes')]",
     "poolLowPriNodes": "[parameters('poolNodes')]",
     "defaultKeyVault": {
-      "id": "[resourceId(parameters('keyVaultResourceGroup'),'Microsoft.KeyVault/vaults',parameters('keyVaultName'))]"
+      "id": "[resourceId(parameters('keyVaultResourceGroupName'),'Microsoft.KeyVault/vaults',parameters('keyVaultName'))]"
       //"id": "/subscriptions/20a54399-d893-4069-a673-a3722808438d/resourceGroups/batch-rg/providers/Microsoft.KeyVault/vaults/bskv01"
     },
     "vnetResourceGroup": "[resourceGroup().name]",
