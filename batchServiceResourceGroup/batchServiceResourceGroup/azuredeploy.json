@@ -114,6 +114,43 @@
       "metadata": {
         "description": "VM OS Image used for the Virtual Machines Nodes in Batch Account Pool"
       }
+    },
+    "keyVaultResourceGroup": {
+      "type": "string"
+
+    },
+    "keyVaultName": {
+      "type": "string",
+      "defaultValue": null
+
+    },
+    "AuditLogStorageAccountName": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "Name of the storage account where Audit Logs will be stored"
+      }
+    },
+    "storageAccountRGName": {
+      "type": "string",
+      "defaultValue": "[ResourceGroup().name]",
+      "metadata": {
+        "description": "Storage Account resource group name"
+      }
+    },
+    "OMSworkspaceRGName": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "OMS Workspace resource group name"
+      }
+    },
+    "OMSworkspaceName": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "OSM Workspace name"
+      }
     }
   },
   "variables": {
@@ -158,7 +195,7 @@
     "longNamingInfix": "[toLower(parameters('baseName'))]",
     "namingInfix": "[toLower(substring(concat(parameters('baseName'), uniqueString(resourceGroup().id)), 0, 13))]",
     "storageAccountName": "[concat(variables('namingInfix'), parameters('storageaccSuffix'))]",
-    "storageResourceId": "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]",
+    "storageAccountId": "[resourceId(parameters('storageAccountRGName'),'Microsoft.Storage/storageAccounts', variables('storageAccountName'))]",
     "storageApiVersion": "[providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]]",
     "batchAccountName": "[concat(variables('namingInfix'), parameters('batchaccSuffix'))]",
     "batchResourceId": "[resourceId('Microsoft.Batch/batchAccounts', variables('batchAccountName'))]",
@@ -173,7 +210,8 @@
     "poolDedicatedNodes": "[parameters('poolNodes')]",
     "poolLowPriNodes": "[parameters('poolNodes')]",
     "defaultKeyVault": {
-      "id": "/subscriptions/20a54399-d893-4069-a673-a3722808438d/resourceGroups/batch-rg/providers/Microsoft.KeyVault/vaults/bskv01"
+      "id": "[resourceId(parameters('keyVaultResourceGroup'),'Microsoft.KeyVault/vaults',parameters('keyVaultName'))]"
+      //"id": "/subscriptions/20a54399-d893-4069-a673-a3722808438d/resourceGroups/batch-rg/providers/Microsoft.KeyVault/vaults/bskv01"
     },
     "vnetResourceGroup": "[resourceGroup().name]",
     "vnetName": "batch-vnet",
@@ -193,7 +231,7 @@
       },
       "kind": "Storage",
       "tags": {
-        "ObjectName": "[variables('storageAccountName')]"
+        "displayName": "StorageAccount"
       },
       "properties": {}
     },
@@ -203,21 +241,24 @@
       "apiVersion": "2015-12-01",
       "location": "[parameters('location')]",
       "tags": {
-        "ObjectName": "[variables('batchAccountName')]"
+        "displayName": "BatchAccount"
       },
       "properties": {
         "autoStorage": {
-          "storageAccountId": "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]"
+          "storageAccountId": "[variables('storageAccountId')]"
         }
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]"
+        "[resourceId(parameters('storageAccountRGName'),'Microsoft.Storage/storageAccounts', variables('storageAccountName'))]"
       ]
     },
     {
       "type": "Microsoft.Batch/batchAccounts/pools",
       "name": "[concat(variables('batchAccountName'), '/', variables('poolName'))]",
       "apiVersion": "2017-09-01",
+      "tags": {
+        "displayName": "BatchAccountPool"
+      },
       "properties": {
         "displayName": "[variables('poolName')]",
         "vmSize": "[parameters('vmSize')]",
@@ -261,9 +302,9 @@
       "type": "string",
       "value": "[variables('storageAccountName')]"
     },
-    "storageResourceId": {
+    "storageAccountId": {
       "type": "string",
-      "value": "[variables('storageResourceId')]"
+      "value": "[variables('storageAccountId')]"
 
     },
     "batchAccountName": {
