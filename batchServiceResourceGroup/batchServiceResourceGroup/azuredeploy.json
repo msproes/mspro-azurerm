@@ -199,12 +199,12 @@
     "batchSecretName": "[concat(parameters('baseName'),'2batchSecret')]",
     "keyVaultResourceId": "[[resourceId(subscription().subscriptionId,  parameters('keyVaultResourceGroupName'), 'Microsoft.KeyVault/vaults', parameters('keyVaultName'))]]",
     "poolName": "[concat(variables('batchAccountName'), '-Pool01')]",
+    "poolDedicatedNodes": 0,
+    "poolLowPriNodes": 2,
     "serverPublisher": "variables('serverType')[variables('vmOSTypeIndex')].publisher",
     "serverOffer": "variables('serverType')[variables('vmOSTypeIndex')].offer",
     "serverSku": "variables('serverType')[variables('vmOSTypeIndex')].sku",
     "serverNodeAgent": "variables('serverType')[variables('vmOSTypeIndex')].nodeAgentSkuId",
-    "poolDedicatedNodes": 0,
-    "poolLowPriNodes": 0,
     "defaultKeyVault": {
       "id": "[resourceId(parameters('keyVaultResourceGroupName'),'Microsoft.KeyVault/vaults',parameters('keyVaultName'))]"
       //"id": "/subscriptions/20a54399-d893-4069-a673-a3722808438d/resourceGroups/batch-rg/providers/Microsoft.KeyVault/vaults/bskv01"
