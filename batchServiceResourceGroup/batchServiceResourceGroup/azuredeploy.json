@@ -29,15 +29,6 @@
       "minLength": 3,
       "maxLength": 61
     },
-    "poolNodes": {
-      "type": "int",
-      "defaultValue": 0,
-      "metadata": {
-        "description": "Number of Nodes in Pool"
-      },
-      "minValue": 0,
-      "maxValue": 100
-    },
     "userUsername": {
       "type": "string",
       "defaultValue": "usr",
@@ -103,9 +94,9 @@
     },
     "vmOSType": {
       "type": "string",
-      "defaultValue": "0 - UbuntuServer 16.04.0-LTS",
+      "defaultValue": "0 - UbuntuServer  16.04.0-LTS",
       "allowedValues": [
-        "0 - UbuntuServer 16.04.0-LTS",
+        "0 - UbuntuServer  16.04.0-LTS",
         "1 - WindowsServer 2016-Datacenter-smalldisk",
         "2 - WindowsServer 2016-Datacenter",
         "3 - WindowsServer 2012-R2-Datacenter-smalldisk",
@@ -212,8 +203,8 @@
     "serverOffer": "variables('serverType')[variables('vmOSTypeIndex')].offer",
     "serverSku": "variables('serverType')[variables('vmOSTypeIndex')].sku",
     "serverNodeAgent": "variables('serverType')[variables('vmOSTypeIndex')].nodeAgentSkuId",
-    "poolDedicatedNodes": "[parameters('poolNodes')]",
-    "poolLowPriNodes": "[parameters('poolNodes')]",
+    "poolDedicatedNodes": 0,
+    "poolLowPriNodes": 0,
     "defaultKeyVault": {
       "id": "[resourceId(parameters('keyVaultResourceGroupName'),'Microsoft.KeyVault/vaults',parameters('keyVaultName'))]"
       //"id": "/subscriptions/20a54399-d893-4069-a673-a3722808438d/resourceGroups/batch-rg/providers/Microsoft.KeyVault/vaults/bskv01"
