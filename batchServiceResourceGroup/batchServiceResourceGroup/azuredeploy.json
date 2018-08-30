@@ -262,7 +262,7 @@
       "name": "[concat(variables('batchAccountName'), '/', variables('poolName'))]",
       "apiVersion": "2017-09-01",
       "properties": {
-        "displayName": "Pool",
+        "displayName": "[variables('poolName')]",
         "vmSize": "[parameters('vmSize')]",
         "deploymentConfiguration": {
           "virtualMachineConfiguration": {
