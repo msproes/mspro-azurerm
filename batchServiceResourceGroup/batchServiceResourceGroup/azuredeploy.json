@@ -206,10 +206,9 @@
     },
     {
       "type": "Microsoft.Batch/batchAccounts/pools",
-      "name": "[variables('poolName')]",
+      "name": "[concat(variables('batchAccountName'), '/', variables('poolName'))]",
       "apiVersion": "2017-09-01",
       "properties": {
-        "displayName": "Pool",
         "vmSize": "[parameters('vmSize')]",
         "deploymentConfiguration": {
           "virtualMachineConfiguration": {
@@ -227,19 +226,7 @@
             "targetDedicatedNodes": "[variables('poolDedicatedNodes')]",
             "targetLowPriorityNodes": "[variables('poolLowPriNodes')]"
           }
-        },
-        "userAccounts": [
-          {
-            "name": "[parameters('userUserName')]",
-            "password": "[parameters('userPassword')]",
-            "elevationLevel": "NonAdmin"
-          },
-          {
-            "name": "[parameters('adminUserName')]",
-            "password": "[parameters('adminPassword')]",
-            "elevationLevel": "Admin"
-          }
-        ]
+        }
       },
       "dependsOn": [
         "[concat('Microsoft.Batch/batchAccounts/', variables('batchAccountName'))]"
