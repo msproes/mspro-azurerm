@@ -191,6 +191,21 @@
   },
   "resources": [
     {
+      "type": "Microsoft.Storage/storageAccounts",
+      "name": "[variables('storageAccountname')]",
+      "apiVersion": "2016-01-01",
+      "location": "[parameters('location')]",
+      "comments": "This storage account is used to associate to a batch account",
+      "sku": {
+        "name": "[parameters('storageAccountsku')]"
+      },
+      "kind": "Storage",
+      "tags": {
+        "ObjectName": "[variables('storageAccountName')]"
+      },
+      "properties": {}
+    },
+    {
       "type": "Microsoft.Batch/batchAccounts",
       "name": "[variables('batchAccountName')]",
       "apiVersion": "2015-12-01",
