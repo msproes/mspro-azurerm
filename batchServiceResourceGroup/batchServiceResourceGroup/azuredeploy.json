@@ -2,36 +2,31 @@
   "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
   "contentVersion": "1.0.0.0",
   "parameters": {
-    "baseName": {
+    "bsName": {
       "type": "string",
       "defaultValue": "[ResourceGroup().name]",
       "metadata": {
-        "description": "Prefix used for naming all the resources. Must be globally unique and 3 to 13 characters long."
+        "description": "Prefix Base for naming all the resources. Must be globally unique and 3 to 61 characters long."
       },
       "minLength": 3,
       "maxLength": 61
     },
-    "location": {
-      "type": "string",
-      "defaultValue": "[resourceGroup().location]",
+    "poolNodes": {
+      "type": "int",
+      "defaultValue": 0,
       "metadata": {
-        "description": "Batch Account location"
-      }
+        "description": "Number of Nodes in Pool"
+      },
+      "minValue": 0,
+      "maxValue": 100
     },
-
     "userUsername": {
       "type": "string",
       "defaultValue": "usr",
       "minLength": 3,
       "maxLength": 15,
       "metadata": {
-        "description": "Name for the User account created in all VMs"
-      }
-    },
-    "userPassword": {
-      "type": "securestring",
-      "metadata": {
-        "description": "User account password"
+        "description": "User username on all VMs"
       }
     },
 
@@ -41,41 +36,22 @@
       "minLength": 3,
       "maxLength": 15,
       "metadata": {
-        "description": "Name for the Administrator account created in all VMs"
+        "description": "Administrator username on all VMs"
       }
     },
-
+    "userPassword": {
+      "type": "securestring",
+      "metadata": {
+        "description": "User password on all VMs"
+      }
+    },
     "adminPassword": {
       "type": "securestring",
       "metadata": {
-        "description": "Administrator account password"
+        "description": "Administrator password on all VMs"
       }
     },
-    "vmSize": {
-      "type": "string",
-      "defaultValue": "Standard_A1_v2",
-      "allowedValues": [
-        "Standard_A1_v2",
-        "Standard_A2_v2"
-      ],
-      "metadata": {
-        "description": "Size for the Virtual Machines used in the Batch Account Pool"
-      }
-    },
-    "vmOSType": {
-      "type": "string",
-      "defaultValue": "0 - UbuntuServer  16.04.0-LTS",
-      "allowedValues": [
-        "0 - UbuntuServer  16.04.0-LTS",
-        "1 - WindowsServer 2016-Datacenter-smalldisk",
-        "2 - WindowsServer 2016-Datacenter",
-        "3 - WindowsServer 2012-R2-Datacenter-smalldisk",
-        "4 - WindowsServer 2012-R2-Datacenter"
-      ],
-      "metadata": {
-        "description": "VM OS Image used for the Virtual Machines Nodes in Batch Account Pool"
-      }
-    },
+
     "storageAccountSku": {
       "type": "string",
       "defaultValue": "Standard_LRS",
@@ -89,38 +65,59 @@
         "description": "Storage Account type"
       }
     },
-    "keyVaultResourceGroupName": {
+    "location": {
       "type": "string",
-      "defaultValue": "[ResourceGroup().name]",
+      "defaultValue": "[resourceGroup().location]",
       "metadata": {
-        "description": "Key Vault resource group name"
+        "description": "Location for all resources."
       }
     },
-    "keyVaultName": {
+    "vmSize": {
       "type": "string",
-      "defaultValue": "keyVault",
+      "defaultValue": "Standard_A2_v2",
+      "allowedValues": [
+        "Standard_A2_v2",
+        "Standard_A1_v2"
+      ],
       "metadata": {
-        "description": "Key Vault name"
+        "description": "Size for the Virtual Machines used in the Batch Account Pool"
       }
     },
-
-    "omsResourceGroupName": {
+    "vmOSType": {
       "type": "string",
-      "defaultValue": "",
+      "defaultValue": "0 - UbuntuServer",
+      "allowedValues": [
+        "0 - UbuntuServer",
+        "1 - WindowsServer"
+      ],
       "metadata": {
-        "description": "OMS Workspace resource group name"
-      }
-    },
-    "omsName": {
-      "type": "string",
-      "defaultValue": "",
-      "metadata": {
-        "description": "OSM Workspace name"
+        "description": "OS Type for the Virtual Machines used in the Batch Account Pool"
       }
     }
   },
   "variables": {
-    "vmTypes": [
+    "longNamingInfix": "[toLower(parameters('bsName'))]",
+    "namingInfix": "[toLower(substring(concat(parameters('bsName'), uniqueString(resourceGroup().id)), 0, 13))]",
+    "storageAccountName": "[concat(variables('namingInfix'), 'storageacc')]",
+    "storageResourceId": "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]",
+    "storageApiVersion": "[providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]]",
+    "batchAccountName": "[concat(variables('namingInfix'), 'batchacc')]",
+    "batchResourceId": "[resourceId('Microsoft.Batch/batchAccounts', variables('batchAccountName'))]",
+    "batchApiVersion": "[providers('Microsoft.Batch', 'batchAccounts').apiVersions[0]]",
+    "batchSecretName": "[concat(parameters('bsName'),'2batchSecret')]",
+    "keyVaultResourceId": "[[resourceId(subscription().subscriptionId,  parameters('keyVaultResourceGroup'), 'Microsoft.KeyVault/vaults', parameters('keyVaultName'))]]",
+    "poolName": "[concat(variables('batchAccountName'), '-Pool01')]",
+    "serverPublisher": "Canonical",
+    "serverOffer": "UbuntuServer",
+    "serverSku": "16.04.0-LTS",
+    "serverNodeAgent": "batch.node.ubuntu 16.04",
+    "poolDedicatedNodes": "[parameters('poolNodes')]",
+    "poolLowPriNodes": "[parameters('poolNodes')]",
+    "defaultKeyVault": {
+      "id": "/subscriptions/20a54399-d893-4069-a673-a3722808438d/resourceGroups/batch-rg/providers/Microsoft.KeyVault/vaults/bskv01"
+    },
+    "vmOSTypeIndex": "[int(first(parameters('vmOSType')))]",
+    "serverType": [
       {
         "name": "UB1604",
         "publisher": "Canonical",
@@ -129,71 +126,13 @@
         "nodeAgentSkuId": "batch.node.ubuntu 16.04"
       },
       {
-        "name": "WS2016small",
+        "name": "WS2016",
         "publisher": "MicrosoftWindowsServer",
         "offer": "WindowsServer",
         "sku": "2016-Datacenter-smalldisk",
         "nodeAgentSkuId": "batch.node.windows amd64"
-      },
-      {
-        "name": "WS2016",
-        "publisher": "MicrosoftWindowsServer",
-        "offer": "WindowsServer",
-        "sku": "2016-Datacenter",
-        "nodeAgentSkuId": "batch.node.windows amd64"
-      },
-      {
-        "name": "WS2012R2small",
-        "publisher": "MicrosoftWindowsServer",
-        "offer": "WindowsServer",
-        "sku": "2012-R2-Datacenter-smalldisk",
-        "nodeAgentSkuId": "batch.node.windows amd64"
-      },
-      {
-        "name": "WS2012R2",
-        "publisher": "MicrosoftWindowsServer",
-        "offer": "WindowsServer",
-        "sku": "2012-R2-Datacenter",
-        "nodeAgentSkuId": "batch.node.windows amd64"
       }
-    ],
-    "vmOSTypeIndex": "[int(first(parameters('vmOSType')))]",
-    "longNamingInfix": "[toLower(parameters('baseName'))]",
-    "namingInfix": "[toLower(substring(concat(parameters('baseName'), uniqueString(resourceGroup().id)), 0, 13))]",
-    "batchaccSuffix": {
-      "type": "string",
-      "defaultValue": "batchacc",
-      "metadata": {
-        "description": "Suffix for naming the batch account. Must be globally unique and 3 to 10 characters long."
-      },
-      "minLength": 3,
-      "maxLength": 61
-    },
-    "storageAccountNameSuffix": "storageacc",
-    "batchAccountNameSuffix" : "batchacc",
-    "storageAccountName": "[concat(variables('namingInfix'), variables('storageAccountNameSuffix'))]",
-    "storageAccountId": "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName'))]",
-    "storageApiVersion": "[providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]]",
-    "batchAccountName": "[concat(variables('namingInfix'), variables('batchAccountNameSuffix'))]",
-    "batchResourceId": "[resourceId('Microsoft.Batch/batchAccounts', variables('batchAccountName'))]",
-    "batchApiVersion": "[providers('Microsoft.Batch', 'batchAccounts').apiVersions[0]]",
-    "batchSecretName": "[concat(parameters('baseName'),'2batchSecret')]",
-    "keyVaultResourceId": "[[resourceId(subscription().subscriptionId,  parameters('keyVaultResourceGroupName'), 'Microsoft.KeyVault/vaults', parameters('keyVaultName'))]]",
-    "poolName": "[concat(variables('batchAccountName'), '-Pool01')]",
-    "serverPublisher": "variables('serverType')[variables('vmOSTypeIndex')].publisher",
-    "serverOffer": "variables('serverType')[variables('vmOSTypeIndex')].offer",
-    "serverSku": "variables('serverType')[variables('vmOSTypeIndex')].sku",
-    "serverNodeAgent": "variables('serverType')[variables('vmOSTypeIndex')].nodeAgentSkuId",
-    "poolDedicatedNodes": 0,
-    "poolLowPriNodes": 0,
-    "defaultKeyVault": {
-      "id": "[resourceId(parameters('keyVaultResourceGroupName'),'Microsoft.KeyVault/vaults',parameters('keyVaultName'))]"
-    },
-    "vnetResourceGroup": "[resourceGroup().name]",
-    "vnetName": "batch-vnet",
-    "vnetID": "[resourceId(variables('vnetResourceGroup'),'Microsoft.Network/virtualNetworks',variables('vnetName'))]",
-    "vnetSubnet1Name": "batch-vnetSubnet1",
-    "vnetSubnet1Ref": "[concat(variables('vnetID'),'/subnets/',variables('vnetSubnet1Name'))]"
+    ]
   },
   "resources": [
     {
@@ -212,6 +151,23 @@
       "properties": {}
     },
     {
+      "type": "Microsoft.Batch/batchAccounts",
+      "name": "[variables('batchAccountName')]",
+      "apiVersion": "2015-12-01",
+      "location": "[parameters('location')]",
+      "tags": {
+        "ObjectName": "[variables('batchAccountName')]"
+      },
+      "properties": {
+        "autoStorage": {
+          "storageAccountId": "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]"
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]"
+      ]
+    },
+    {
       "type": "Microsoft.Batch/batchAccounts/pools",
       "name": "[concat(variables('batchAccountName'), '/', variables('poolName'))]",
       "apiVersion": "2017-09-01",
@@ -220,12 +176,12 @@
         "deploymentConfiguration": {
           "virtualMachineConfiguration": {
             "imageReference": {
-              "publisher": "[variables('vmTypes')[variables('vmOSTypeIndex')].publisher]",
-              "offer": "[variables('vmTypes')[variables('vmOSTypeIndex')].offer]",
-              "sku": "[variables('vmTypes')[variables('vmOSTypeIndex')].sku]",
+              "publisher": "[variables('serverType')[variables('vmOSTypeIndex')].publisher]",
+              "offer": "[variables('serverType')[variables('vmOSTypeIndex')].offer]",
+              "sku": "[variables('serverType')[variables('vmOSTypeIndex')].sku]",
               "version": "latest"
             },
-            "nodeAgentSkuId": "[variables('vmTypes')[variables('vmOSTypeIndex')].nodeAgentSkuId]"
+            "nodeAgentSkuId": "[variables('serverType')[variables('vmOSTypeIndex')].nodeAgentSkuId]"
           }
         },
         "scaleSettings": {
@@ -233,7 +189,19 @@
             "targetDedicatedNodes": "[variables('poolDedicatedNodes')]",
             "targetLowPriorityNodes": "[variables('poolLowPriNodes')]"
           }
-        }
+        },
+        "userAccounts": [
+          {
+            "name": "[parameters('userUserName')]",
+            "password": "[parameters('userPassword')]",
+            "elevationLevel": "NonAdmin"
+          },
+          {
+            "name": "[parameters('adminUserName')]",
+            "password": "[parameters('adminPassword')]",
+            "elevationLevel": "Admin"
+          }
+        ]
       },
       "dependsOn": [
         "[concat('Microsoft.Batch/batchAccounts/', variables('batchAccountName'))]"
@@ -245,9 +213,9 @@
       "type": "string",
       "value": "[variables('storageAccountName')]"
     },
-    "storageAccountId": {
+    "storageResourceId": {
       "type": "string",
-      "value": "[variables('storageAccountId')]"
+      "value": "[variables('storageResourceId')]"
 
     },
     "batchAccountName": {
@@ -272,7 +240,7 @@
     },
     "deploymentUri": {
       "type": "string",
-      "value": "https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fmsproes%2Fmspro-azurerm%2Fmaster%2FbatchServiceResourceGroup%2FbatchServiceResourceGroup%2Fazuredeploy.json"
+      "value": "https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fmsproes%2Fmspro-azurerm%2Fvs-resourcegroup-project%2FbatchServiceResourceGroup%2FbatchServiceResourceGroup%2Fazuredeploy.json"
     }
   }
 }
