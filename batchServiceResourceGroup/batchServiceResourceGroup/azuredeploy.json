@@ -174,12 +174,12 @@
     "batchSecretName": "[concat(parameters('baseName'),'2batchSecret')]",
     "keyVaultResourceId": "[[resourceId(subscription().subscriptionId,  parameters('keyVaultResourceGroupName'), 'Microsoft.KeyVault/vaults', parameters('keyVaultName'))]]",
     "poolName": "[concat(variables('batchAccountName'), '-Pool01')]",
-    "poolDedicatedNodes": 0,
-    "poolLowPriNodes": 2,
     "serverPublisher": "variables('serverType')[variables('vmOSTypeIndex')].publisher",
     "serverOffer": "variables('serverType')[variables('vmOSTypeIndex')].offer",
     "serverSku": "variables('serverType')[variables('vmOSTypeIndex')].sku",
     "serverNodeAgent": "variables('serverType')[variables('vmOSTypeIndex')].nodeAgentSkuId",
+    "poolDedicatedNodes": 0,
+    "poolLowPriNodes": 0,
     "defaultKeyVault": {
       "id": "[resourceId(parameters('keyVaultResourceGroupName'),'Microsoft.KeyVault/vaults',parameters('keyVaultName'))]"
     },
