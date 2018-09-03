@@ -11,31 +11,27 @@
       "minLength": 3,
       "maxLength": 61
     },
-    "batchaccSuffix": {
+    "location": {
       "type": "string",
-      "defaultValue": "batchacc",
+      "defaultValue": "[resourceGroup().location]",
       "metadata": {
-        "description": "Suffix for naming the batch account. Must be globally unique and 3 to 10 characters long."
-      },
-      "minLength": 3,
-      "maxLength": 61
+        "description": "Batch Account location"
+      }
     },
-    "storageaccSuffix": {
-      "type": "string",
-      "defaultValue": "storageacc",
-      "metadata": {
-        "description": "Suffix for naming the storage account. Must be globally unique and 3 to 10 characters long."
-      },
-      "minLength": 3,
-      "maxLength": 61
-    },
+
     "userUsername": {
       "type": "string",
       "defaultValue": "usr",
       "minLength": 3,
       "maxLength": 15,
       "metadata": {
-        "description": "User username on all VMs"
+        "description": "Name for the User account created in all VMs"
+      }
+    },
+    "userPassword": {
+      "type": "securestring",
+      "metadata": {
+        "description": "User account password"
       }
     },
 
@@ -45,48 +41,22 @@
       "minLength": 3,
       "maxLength": 15,
       "metadata": {
-        "description": "Administrator username on all VMs"
-      }
-    },
-    "userPassword": {
-      "type": "securestring",
-      "metadata": {
-        "description": "User password on all VMs"
-      }
-    },
-    "adminPassword": {
-      "type": "securestring",
-      "metadata": {
-        "description": "Administrator password on all VMs"
+        "description": "Name for the Administrator account created in all VMs"
       }
     },
 
-    "storageAccountSku": {
-      "type": "string",
-      "defaultValue": "Standard_LRS",
-      "allowedValues": [
-        "Standard_LRS",
-        "Standard_GRS",
-        "Standard_ZRS",
-        "Premium_LRS"
-      ],
+    "adminPassword": {
+      "type": "securestring",
       "metadata": {
-        "description": "Storage Account type"
-      }
-    },
-    "location": {
-      "type": "string",
-      "defaultValue": "[resourceGroup().location]",
-      "metadata": {
-        "description": "Location for all resources."
+        "description": "Administrator account password"
       }
     },
     "vmSize": {
       "type": "string",
-      "defaultValue": "Standard_A2_v2",
+      "defaultValue": "Standard_A1_v2",
       "allowedValues": [
-        "Standard_A2_v2",
-        "Standard_A1_v2"
+        "Standard_A1_v2",
+        "Standard_A2_v2"
       ],
       "metadata": {
         "description": "Size for the Virtual Machines used in the Batch Account Pool"
@@ -106,6 +76,33 @@
         "description": "VM OS Image used for the Virtual Machines Nodes in Batch Account Pool"
       }
     },
+    "storageAccountResourceGroupName": {
+      "type": "string",
+      "defaultValue": "[ResourceGroup().name]",
+      "metadata": {
+        "description": "Storage Account resource group name"
+      }
+    },
+    "storageAccountName": {
+      "type": "string",
+      "defaultValue": "[ResourceGroup().name]",
+      "metadata": {
+        "description": "Storage Account resource group name"
+      }
+    },
+    "storageAccountSku": {
+      "type": "string",
+      "defaultValue": "Standard_LRS",
+      "allowedValues": [
+        "Standard_LRS",
+        "Standard_GRS",
+        "Standard_ZRS",
+        "Premium_LRS"
+      ],
+      "metadata": {
+        "description": "Storage Account type"
+      }
+    },
     "keyVaultResourceGroupName": {
       "type": "string",
       "defaultValue": "[ResourceGroup().name]",
@@ -120,28 +117,15 @@
         "description": "Key Vault name"
       }
     },
-    "AuditLogStorageAccountName": {
-      "type": "string",
-      "defaultValue": "",
-      "metadata": {
-        "description": "Name of the storage account where Audit Logs will be stored"
-      }
-    },
-    "storageAccountRGName": {
-      "type": "string",
-      "defaultValue": "[ResourceGroup().name]",
-      "metadata": {
-        "description": "Storage Account resource group name"
-      }
-    },
-    "OMSworkspaceRGName": {
+
+    "omsResourceGroupName": {
       "type": "string",
       "defaultValue": "",
       "metadata": {
         "description": "OMS Workspace resource group name"
       }
     },
-    "OMSworkspaceName": {
+    "omsName": {
       "type": "string",
       "defaultValue": "",
       "metadata": {
@@ -190,10 +174,21 @@
     "vmOSTypeIndex": "[int(first(parameters('vmOSType')))]",
     "longNamingInfix": "[toLower(parameters('baseName'))]",
     "namingInfix": "[toLower(substring(concat(parameters('baseName'), uniqueString(resourceGroup().id)), 0, 13))]",
-    "storageAccountName": "[concat(variables('namingInfix'), parameters('storageaccSuffix'))]",
-    "storageAccountId": "[resourceId(parameters('storageAccountRGName'),'Microsoft.Storage/storageAccounts', variables('storageAccountName'))]",
+    "batchaccSuffix": {
+      "type": "string",
+      "defaultValue": "batchacc",
+      "metadata": {
+        "description": "Suffix for naming the batch account. Must be globally unique and 3 to 10 characters long."
+      },
+      "minLength": 3,
+      "maxLength": 61
+    },
+    "storageAccountNameSuffix": "storageacc",
+    "batchAccountNameSuffix" : "batchacc",
+    "storageAccountName": "[concat(variables('namingInfix'), variables('storageAccountNameSuffix'))]",
+    "storageAccountId": "[resourceId(parameters('storageAccountResourceGroupName'),'Microsoft.Storage/storageAccounts', parameters('storageAccountName'))]",
     "storageApiVersion": "[providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]]",
-    "batchAccountName": "[concat(variables('namingInfix'), parameters('batchaccSuffix'))]",
+    "batchAccountName": "[concat(variables('namingInfix'), variables('batchAccountNameSuffix'))]",
     "batchResourceId": "[resourceId('Microsoft.Batch/batchAccounts', variables('batchAccountName'))]",
     "batchApiVersion": "[providers('Microsoft.Batch', 'batchAccounts').apiVersions[0]]",
     "batchSecretName": "[concat(parameters('baseName'),'2batchSecret')]",
@@ -207,7 +202,6 @@
     "serverNodeAgent": "variables('serverType')[variables('vmOSTypeIndex')].nodeAgentSkuId",
     "defaultKeyVault": {
       "id": "[resourceId(parameters('keyVaultResourceGroupName'),'Microsoft.KeyVault/vaults',parameters('keyVaultName'))]"
-      //"id": "/subscriptions/20a54399-d893-4069-a673-a3722808438d/resourceGroups/batch-rg/providers/Microsoft.KeyVault/vaults/bskv01"
     },
     "vnetResourceGroup": "[resourceGroup().name]",
     "vnetName": "batch-vnet",
@@ -223,7 +217,7 @@
       "location": "[parameters('location')]",
       "comments": "This storage account is used to associate to a batch account",
       "sku": {
-        "name": "[parameters('storageAccountsku')]"
+        "name": "[parameters('storageAccountSku')]"
       },
       "kind": "Storage",
       "tags": {
@@ -245,7 +239,7 @@
         }
       },
       "dependsOn": [
-        "[resourceId(parameters('storageAccountRGName'),'Microsoft.Storage/storageAccounts', variables('storageAccountName'))]"
+        "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]"
       ]
     },
     {
@@ -253,7 +247,6 @@
       "name": "[concat(variables('batchAccountName'), '/', variables('poolName'))]",
       "apiVersion": "2017-09-01",
       "properties": {
-        //"displayName": "[variables('poolName')]",
         "vmSize": "[parameters('vmSize')]",
         "deploymentConfiguration": {
           "virtualMachineConfiguration": {
