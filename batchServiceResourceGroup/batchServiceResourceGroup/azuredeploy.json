@@ -85,16 +85,16 @@
     },
     "vmOSType": {
       "type": "string",
-      "defaultValue": "0 - UbuntuServer",
+      "defaultValue": "0 - UbuntuServer  16.04.0-LTS",
       "allowedValues": [
-        "0 - UbuntuServer",
-        "1 - WindowsServer"
-      ],
-      "metadata": {
-        "description": "OS Type for the Virtual Machines used in the Batch Account Pool"
-      }
+        "0 - UbuntuServer  16.04.0-LTS",
+        "1 - WindowsServer 2016-Datacenter-smalldisk",
+        "2 - WindowsServer 2016-Datacenter",
+        "3 - WindowsServer 2012-R2-Datacenter-smalldisk",
+        "4 - WindowsServer 2012-R2-Datacenter"
+      ]
     }
-  },
+    },
   "variables": {
     "longNamingInfix": "[toLower(parameters('bsName'))]",
     "namingInfix": "[toLower(substring(concat(parameters('bsName'), uniqueString(resourceGroup().id)), 0, 13))]",
@@ -117,7 +117,7 @@
       "id": "/subscriptions/20a54399-d893-4069-a673-a3722808438d/resourceGroups/batch-rg/providers/Microsoft.KeyVault/vaults/bskv01"
     },
     "vmOSTypeIndex": "[int(first(parameters('vmOSType')))]",
-    "serverType": [
+    "vmTypes": [
       {
         "name": "UB1604",
         "publisher": "Canonical",
@@ -126,121 +126,142 @@
         "nodeAgentSkuId": "batch.node.ubuntu 16.04"
       },
       {
-        "name": "WS2016",
+        "name": "WS2016small",
         "publisher": "MicrosoftWindowsServer",
         "offer": "WindowsServer",
         "sku": "2016-Datacenter-smalldisk",
         "nodeAgentSkuId": "batch.node.windows amd64"
+      },
+      {
+        "name": "WS2016",
+        "publisher": "MicrosoftWindowsServer",
+        "offer": "WindowsServer",
+        "sku": "2016-Datacenter",
+        "nodeAgentSkuId": "batch.node.windows amd64"
+      },
+      {
+        "name": "WS2012R2small",
+        "publisher": "MicrosoftWindowsServer",
+        "offer": "WindowsServer",
+        "sku": "2012-R2-Datacenter-smalldisk",
+        "nodeAgentSkuId": "batch.node.windows amd64"
+      },
+      {
+        "name": "WS2012R2",
+        "publisher": "MicrosoftWindowsServer",
+        "offer": "WindowsServer",
+        "sku": "2012-R2-Datacenter",
+        "nodeAgentSkuId": "batch.node.windows amd64"
       }
     ]
   },
-  "resources": [
-    {
-      "type": "Microsoft.Storage/storageAccounts",
-      "name": "[variables('storageAccountname')]",
-      "apiVersion": "2016-01-01",
-      "location": "[parameters('location')]",
-      "comments": "This storage account is used to associate to a batch account",
-      "sku": {
-        "name": "[parameters('storageAccountsku')]"
+    "resources": [
+      {
+        "type": "Microsoft.Storage/storageAccounts",
+        "name": "[variables('storageAccountname')]",
+        "apiVersion": "2016-01-01",
+        "location": "[parameters('location')]",
+        "comments": "This storage account is used to associate to a batch account",
+        "sku": {
+          "name": "[parameters('storageAccountsku')]"
+        },
+        "kind": "Storage",
+        "tags": {
+          "ObjectName": "[variables('storageAccountName')]"
+        },
+        "properties": {}
       },
-      "kind": "Storage",
-      "tags": {
-        "ObjectName": "[variables('storageAccountName')]"
-      },
-      "properties": {}
-    },
-    {
-      "type": "Microsoft.Batch/batchAccounts",
-      "name": "[variables('batchAccountName')]",
-      "apiVersion": "2015-12-01",
-      "location": "[parameters('location')]",
-      "tags": {
-        "ObjectName": "[variables('batchAccountName')]"
-      },
-      "properties": {
-        "autoStorage": {
-          "storageAccountId": "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]"
-        }
-      },
-      "dependsOn": [
-        "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]"
-      ]
-    },
-    {
-      "type": "Microsoft.Batch/batchAccounts/pools",
-      "name": "[concat(variables('batchAccountName'), '/', variables('poolName'))]",
-      "apiVersion": "2017-09-01",
-      "properties": {
-        "vmSize": "[parameters('vmSize')]",
-        "deploymentConfiguration": {
-          "virtualMachineConfiguration": {
-            "imageReference": {
-              "publisher": "[variables('serverType')[variables('vmOSTypeIndex')].publisher]",
-              "offer": "[variables('serverType')[variables('vmOSTypeIndex')].offer]",
-              "sku": "[variables('serverType')[variables('vmOSTypeIndex')].sku]",
-              "version": "latest"
-            },
-            "nodeAgentSkuId": "[variables('serverType')[variables('vmOSTypeIndex')].nodeAgentSkuId]"
+      {
+        "type": "Microsoft.Batch/batchAccounts",
+        "name": "[variables('batchAccountName')]",
+        "apiVersion": "2015-12-01",
+        "location": "[parameters('location')]",
+        "tags": {
+          "ObjectName": "[variables('batchAccountName')]"
+        },
+        "properties": {
+          "autoStorage": {
+            "storageAccountId": "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]"
           }
         },
-        "scaleSettings": {
-          "fixedScale": {
-            "targetDedicatedNodes": "[variables('poolDedicatedNodes')]",
-            "targetLowPriorityNodes": "[variables('poolLowPriNodes')]"
-          }
-        },
-        "userAccounts": [
-          {
-            "name": "[parameters('userUserName')]",
-            "password": "[parameters('userPassword')]",
-            "elevationLevel": "NonAdmin"
-          },
-          {
-            "name": "[parameters('adminUserName')]",
-            "password": "[parameters('adminPassword')]",
-            "elevationLevel": "Admin"
-          }
+        "dependsOn": [
+          "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]"
         ]
       },
-      "dependsOn": [
-        "[concat('Microsoft.Batch/batchAccounts/', variables('batchAccountName'))]"
-      ]
-    }
-  ],
-  "outputs": {
-    "storageAccountName": {
-      "type": "string",
-      "value": "[variables('storageAccountName')]"
-    },
-    "storageResourceId": {
-      "type": "string",
-      "value": "[variables('storageResourceId')]"
+      {
+        "type": "Microsoft.Batch/batchAccounts/pools",
+        "name": "[concat(variables('batchAccountName'), '/', variables('poolName'))]",
+        "apiVersion": "2017-09-01",
+        "properties": {
+          "vmSize": "[parameters('vmSize')]",
+          "deploymentConfiguration": {
+            "virtualMachineConfiguration": {
+              "imageReference": {
+                "publisher": "[variables('vmTypes')[variables('vmOSTypeIndex')].publisher]",
+                "offer": "[variables('vmTypes')[variables('vmOSTypeIndex')].offer]",
+                "sku": "[variables('vmTypes')[variables('vmOSTypeIndex')].sku]",
+                "version": "latest"
+              },
+              "nodeAgentSkuId": "[variables('vmTypes')[variables('vmOSTypeIndex')].nodeAgentSkuId]"
+            }
+          },
+          "scaleSettings": {
+            "fixedScale": {
+              "targetDedicatedNodes": "[variables('poolDedicatedNodes')]",
+              "targetLowPriorityNodes": "[variables('poolLowPriNodes')]"
+            }
+          },
+          "userAccounts": [
+            {
+              "name": "[parameters('userUserName')]",
+              "password": "[parameters('userPassword')]",
+              "elevationLevel": "NonAdmin"
+            },
+            {
+              "name": "[parameters('adminUserName')]",
+              "password": "[parameters('adminPassword')]",
+              "elevationLevel": "Admin"
+            }
+          ]
+        },
+        "dependsOn": [
+          "[concat('Microsoft.Batch/batchAccounts/', variables('batchAccountName'))]"
+        ]
+      }
+    ],
+    "outputs": {
+      "storageAccountName": {
+        "type": "string",
+        "value": "[variables('storageAccountName')]"
+      },
+      "storageResourceId": {
+        "type": "string",
+        "value": "[variables('storageResourceId')]"
 
-    },
-    "batchAccountName": {
-      "type": "string",
-      "value": "[variables('batchAccountName')]"
-    },
-    "storageObject": {
-      "type": "object",
-      "value": "[reference(resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName')))]"
-    },
-    "batchObject": {
-      "type": "object",
-      "value": "[reference(resourceId('Microsoft.Batch/batchAccounts', variables('batchAccountName')))]"
-    },
-    "keyVaultResourceId": {
-      "type": "string",
-      "value": "[variables('keyVaultResourceId')]"
-    },
-    "batchPrimaryKey": {
-      "type": "string",
-      "value": "[listKeys(variables('batchResourceId'), variables('batchApiVersion')).primary]"
-    },
-    "deploymentUri": {
-      "type": "string",
-      "value": "https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fmsproes%2Fmspro-azurerm%2Fvs-resourcegroup-project%2FbatchServiceResourceGroup%2FbatchServiceResourceGroup%2Fazuredeploy.json"
+      },
+      "batchAccountName": {
+        "type": "string",
+        "value": "[variables('batchAccountName')]"
+      },
+      "storageObject": {
+        "type": "object",
+        "value": "[reference(resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName')))]"
+      },
+      "batchObject": {
+        "type": "object",
+        "value": "[reference(resourceId('Microsoft.Batch/batchAccounts', variables('batchAccountName')))]"
+      },
+      "keyVaultResourceId": {
+        "type": "string",
+        "value": "[variables('keyVaultResourceId')]"
+      },
+      "batchPrimaryKey": {
+        "type": "string",
+        "value": "[listKeys(variables('batchResourceId'), variables('batchApiVersion')).primary]"
+      },
+      "deploymentUri": {
+        "type": "string",
+        "value": "https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fmsproes%2Fmspro-azurerm%2Fvs-resourcegroup-project%2FbatchServiceResourceGroup%2FbatchServiceResourceGroup%2Fazuredeploy.json"
+      }
     }
   }
-}
