@@ -76,31 +76,11 @@
         "description": "VM OS Image used for the Virtual Machines Nodes in Batch Account Pool"
       }
     },
-    "storageAccountResourceGroupName": {
-      "type": "string",
-      "defaultValue": "[ResourceGroup().name]",
-      "metadata": {
-        "description": "Storage Account resource group name"
-      }
-    },
     "storageAccountName": {
       "type": "string",
-      "defaultValue": "[ResourceGroup().name]",
+      "defaultValue": null,
       "metadata": {
-        "description": "Storage Account resource group name"
-      }
-    },
-    "storageAccountSku": {
-      "type": "string",
-      "defaultValue": "Standard_LRS",
-      "allowedValues": [
-        "Standard_LRS",
-        "Standard_GRS",
-        "Standard_ZRS",
-        "Premium_LRS"
-      ],
-      "metadata": {
-        "description": "Storage Account type"
+        "description": "Storage Account Name to associate with the Batch Account"
       }
     },
     "keyVaultResourceGroupName": {
@@ -186,7 +166,7 @@
     "storageAccountNameSuffix": "storageacc",
     "batchAccountNameSuffix" : "batchacc",
     "storageAccountName": "[concat(variables('namingInfix'), variables('storageAccountNameSuffix'))]",
-    "storageAccountId": "[resourceId(parameters('storageAccountResourceGroupName'),'Microsoft.Storage/storageAccounts', parameters('storageAccountName'))]",
+    "storageAccountId": "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName'))]",
     "storageApiVersion": "[providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]]",
     "batchAccountName": "[concat(variables('namingInfix'), variables('batchAccountNameSuffix'))]",
     "batchResourceId": "[resourceId('Microsoft.Batch/batchAccounts', variables('batchAccountName'))]",
@@ -211,21 +191,6 @@
   },
   "resources": [
     {
-      "type": "Microsoft.Storage/storageAccounts",
-      "name": "[variables('storageAccountname')]",
-      "apiVersion": "2016-01-01",
-      "location": "[parameters('location')]",
-      "comments": "This storage account is used to associate to a batch account",
-      "sku": {
-        "name": "[parameters('storageAccountSku')]"
-      },
-      "kind": "Storage",
-      "tags": {
-        "objectName": "[variables('batchAccountName')]"
-      },
-      "properties": {}
-    },
-    {
       "type": "Microsoft.Batch/batchAccounts",
       "name": "[variables('batchAccountName')]",
       "apiVersion": "2015-12-01",
@@ -235,12 +200,9 @@
       },
       "properties": {
         "autoStorage": {
-          "storageAccountId": "[variables('storageAccountId')]"
+          "storageAccountId": "[parameters('storageAccountId')]"
         }
-      },
-      "dependsOn": [
-        "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]"
-      ]
+      }
     },
     {
       "type": "Microsoft.Batch/batchAccounts/pools",
