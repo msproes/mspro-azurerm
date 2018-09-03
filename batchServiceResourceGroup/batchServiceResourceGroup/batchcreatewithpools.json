@@ -18,7 +18,7 @@
 
     },
 
-    "storageAccountSku": {
+    "storageAccountsku": {
 
       "type": "string",
 
@@ -98,7 +98,7 @@
 
       "sku": {
 
-        "name": "[parameters('storageAccountSku')]"
+        "name": "[parameters('storageAccountsku')]"
 
       },
 
