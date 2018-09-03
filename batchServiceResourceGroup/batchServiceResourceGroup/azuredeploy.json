@@ -212,20 +212,6 @@
       "properties": {}
     },
     {
-      "type": "Microsoft.Batch/batchAccounts",
-      "name": "[variables('batchAccountName')]",
-      "apiVersion": "2015-12-01",
-      "location": "[parameters('location')]",
-      "tags": {
-        "objectName": "[variables('batchAccountName')]"
-      },
-      "properties": {
-        "autoStorage": {
-          "storageAccountId": "[parameters('storageAccountId')]"
-        }
-      }
-    },
-    {
       "type": "Microsoft.Batch/batchAccounts/pools",
       "name": "[concat(variables('batchAccountName'), '/', variables('poolName'))]",
       "apiVersion": "2017-09-01",
