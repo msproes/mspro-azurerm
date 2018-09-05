@@ -2,11 +2,11 @@
   "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
   "contentVersion": "1.0.0.0",
   "parameters": {
-    "batchAccountName": {
+    "bsName": {
       "type": "string",
       "defaultValue": "[ResourceGroup().name]",
       "metadata": {
-        "description": "Name for the batch Account"
+        "description": "Prefix Base for naming all the resources. Must be globally unique and 3 to 61 characters long."
       },
       "minLength": 3,
       "maxLength": 61
@@ -107,6 +107,7 @@
     "storageAccountName": "[concat(variables('namingInfix'), 'storageacc')]",
     "storageResourceId": "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]",
     "storageApiVersion": "[providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]]",
+    "batchAccountName": "[concat(variables('namingInfix'), 'batchacc')]",
     "batchResourceId": "[resourceId('Microsoft.Batch/batchAccounts', variables('batchAccountName'))]",
     "batchApiVersion": "[providers('Microsoft.Batch', 'batchAccounts').apiVersions[0]]",
     "batchSecretName": "[concat(parameters('bsName'),'2batchSecret')]",
