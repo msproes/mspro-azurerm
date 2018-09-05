@@ -95,10 +95,11 @@
       ]
     },
     "keyVaultResourceGroup": {
-      "type": "string"
+      "type": "string",
+      "defaultValue": "[resourceGroup().name]"
     },
     "keyVaultName": {
-      "type":  "string"
+      "type":  "string","defaultValue": "keyvault"
     }
     },
   "variables": {
