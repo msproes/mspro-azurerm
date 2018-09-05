@@ -76,8 +76,8 @@
       "type": "string",
       "defaultValue": "Standard_A2_v2",
       "allowedValues": [
-        "Standard_A2_v2",
-        "Standard_A1_v2"
+        "Standard_A1_v2",
+        "Standard_A2_v2"
       ],
       "metadata": {
         "description": "Size for the Virtual Machines used in the Batch Account Pool"
@@ -93,6 +93,12 @@
         "3 - WindowsServer 2012-R2-Datacenter-smalldisk",
         "4 - WindowsServer 2012-R2-Datacenter"
       ]
+    },
+    "keyVaultResourceGroup": {
+      "type": "string"
+    },
+    "keyVaultName": {
+      "type":  "string"
     }
     },
   "variables": {
@@ -106,6 +112,7 @@
     "batchApiVersion": "[providers('Microsoft.Batch', 'batchAccounts').apiVersions[0]]",
     "batchSecretName": "[concat(parameters('bsName'),'2batchSecret')]",
     "keyVaultResourceId": "[[resourceId(subscription().subscriptionId,  parameters('keyVaultResourceGroup'), 'Microsoft.KeyVault/vaults', parameters('keyVaultName'))]]",
+    "keyVaultUrl": "https://batchservice7batchacc.westeurope.batch.azure.com",
     "poolName": "[concat(variables('batchAccountName'), '-Pool01')]",
     "serverPublisher": "Canonical",
     "serverOffer": "UbuntuServer",
