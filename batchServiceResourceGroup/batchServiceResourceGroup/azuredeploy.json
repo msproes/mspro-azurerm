@@ -99,9 +99,37 @@
       "defaultValue": "[resourceGroup().name]"
     },
     "keyVaultName": {
-      "type":  "string","defaultValue": "keyvault"
-    }
+      "type": "string",
+      "defaultValue": "keyvault"
     },
+    "vnetResourceGroupName": {
+      "type": "string",
+      "defaultValue": "commonweu",
+      "metadata": {
+        "description": "Name of the resource group where the Virtual Network resides"
+      }
+    },
+    "vnetName": {
+      "type": "string",
+      "defaultValue": "commonweu-vnet",
+      "metadata": {
+        "description": "Name of the Virtual Network to be used"
+      }
+    },
+    "vnetSubnetName": {
+      "type": "string",
+      "defaultValue": "default",
+      "metadata": {
+        "description": "Name of the subnet to be used"
+      }
+    },
+    "omsWorkspaceResourceId": {
+      "type": "string",
+      "metadata": {
+        "description": "Resource Id of OMS Workspace for diagnostics"
+      }
+    }
+  },
   "variables": {
     "longNamingInfix": "[toLower(parameters('bsName'))]",
     "namingInfix": "[toLower(substring(concat(parameters('bsName'), uniqueString(resourceGroup().id)), 0, 13))]",
@@ -161,7 +189,9 @@
         "sku": "2012-R2-Datacenter",
         "nodeAgentSkuId": "batch.node.windows amd64"
       }
-    ]
+    ],
+    "vnetID": "[resourceId(parameters('vnetResourceGroupName'), 'Microsoft.Network/virtualNetworks',parameters('vnetName'))]",
+    "subnetRef": "[concat(variables('vnetID'),'/subnets/',parameters('vnetSubnetName'))]"
   },
     "resources": [
       {
@@ -218,6 +248,25 @@
               "targetDedicatedNodes": "[variables('poolDedicatedNodes')]",
               "targetLowPriorityNodes": "[variables('poolLowPriNodes')]"
             }
+          },
+          "enableInterNodeCommunication": "false",
+          "networkConfiguration": {
+            "subnetId": "[variables('subnetRef')]",
+            "endpointConfiguration": {
+              "inboundNatPools": [
+                {
+                  "name": "[concat(variables('poolName'),'-endpointConfig')]",
+                  "protocol": "TCP",
+                  "backendPort": 3389,
+                  "frontendPortRangeStart": 56001,
+                  "frontendPortRangeEnd": 56254
+                }
+              ]
+            }
+          },
+          "maxTasksPerNode": 1,
+          "taskSchedulingPolicy": {
+            "nodeFillType": "Spread"
           },
           "userAccounts": [
             {
