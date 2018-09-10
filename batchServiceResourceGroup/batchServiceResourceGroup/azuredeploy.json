@@ -20,6 +20,28 @@
       "minValue": 0,
       "maxValue": 100
     },
+    "maxTasksPerNode": {
+      "type": "int",
+      "defaultValue": 1,
+      "metadata": {
+        "description": "Maximum Number of Tasks assigned per Node"
+      },
+      "minValue": 1,
+      "maxValue": 4
+    },
+    "poolInterNodeCommunication": {
+      "type": "string",
+      "defaultValue": "Disabled",
+      "allowedValues": [
+        "Enabled",
+        "Disabled"
+      ],
+      "metadata": {
+        "description": "Defines if communication between nodes will be allowed"
+      }
+    },
+
+
     "userUsername": {
       "type": "string",
       "defaultValue": "usr",
@@ -49,6 +71,13 @@
       "type": "securestring",
       "metadata": {
         "description": "Administrator password on all VMs"
+      }
+    },
+    "adminSshPrivateKey": {
+      "type": "string",
+      "defaultValue":"", 
+      "metadata": {
+        "description": "The private key must not be password protected. The private key is used to automatically configure asymmetric-key based authentication for SSH between nodes in a Linux pool when the pool's enableInterNodeCommunication property is true (it is ignored if enableInterNodeCommunication is false). It does this by placing the key pair into the user's .ssh directory. If not specified, password-less SSH is not configured between nodes (no modification of the user's .ssh directory is done)."
       }
     },
 
@@ -123,8 +152,17 @@
         "description": "Name of the subnet to be used"
       }
     },
+    "subnetId": {
+      "type": "string",
+      "defaultValue": "/subscriptions/50a00d8c-0d30-4f65-ad49-e80107df138b/resourceGroups/dmz-lab-v3/providers/Microsoft.Network/virtualNetworks/vnet02/subnets/Spoke",
+      "metadata": {
+        "description": "SubnetId to link a specific vnet to the Batch Service Pool"
+      }
+    },
+    
     "omsWorkspaceResourceId": {
       "type": "string",
+      "defaultValue": "/subscriptions/20a54399-d893-4069-a673-a3722808438d/resourcegroups/commonweu/providers/microsoft.operationalinsights/workspaces/omscommonweu",
       "metadata": {
         "description": "Resource Id of OMS Workspace for diagnostics"
       }
@@ -190,135 +228,150 @@
         "nodeAgentSkuId": "batch.node.windows amd64"
       }
     ],
+    "mySubscriptionId": "[subscription().id]",
+    "vnetResourceGroupName_IsNotNull": "[not(equals(parameters('vnetResourceGroupName'),json('null')))]",
+    "vnetName_IsNotNull": "[not(equals(parameters('vnetResourceGroupName'),json('null')))]",
+    "vnetSubnetName_IsNotNull": "[not(equals(parameters('vnetResourceGroupName'),json('null')))]",
+    "vnetParametersDetailed": "[and(and(variables('vnetResourceGroupName_IsNotNull'),variables('vnetName_IsNotNull')),variables('vnetSubnetName_IsNotNull'))]",
     "vnetID": "[resourceId(parameters('vnetResourceGroupName'), 'Microsoft.Network/virtualNetworks',parameters('vnetName'))]",
-    "subnetRef": "[concat(variables('vnetID'),'/subnets/',parameters('vnetSubnetName'))]"
+    "subnetIdProvided": "[not(equals(parameters('subnetId'),json('null')))]",
+    "subnetIdIsInMySubscription": "[contains(parameters('subnetId'),variables('mySubscriptionId'))]",
+    "subnetIdOK": "[if(and(and(equals(variables('subnetIdProvided'),bool('true')),equals(variables('subnetIdIsInMySubscription'),bool('true'))),equals(variables('subnetIdProvidesSeemsOK'),bool('true'))),bool('true'),bool('false'))]",
+    "subnetIdProvidesSeemsOK": "[and(contains(parameters('subnetId'),'Microsoft.Network/virtualNetworks'),contains(parameters('subnetId'),'/subnets/'))]",
+    "subnetIdGenerated": "[concat(variables('vnetID'),'/subnets/',parameters('vnetSubnetName'))]",
+    "subnetRef": "[if(equals(variables('subnetIdOK'),bool('true')),parameters('subnetId'),variables('subnetIdGenerated'))]",
+    "rdpEndpointConfiguration": "",
+    "sshEndpointConfiguration": ""
   },
-    "resources": [
-      {
-        "type": "Microsoft.Storage/storageAccounts",
-        "name": "[variables('storageAccountname')]",
-        "apiVersion": "2016-01-01",
-        "location": "[parameters('location')]",
-        "comments": "This storage account is used to associate to a batch account",
-        "sku": {
-          "name": "[parameters('storageAccountsku')]"
-        },
-        "kind": "Storage",
-        "tags": {
-          "ObjectName": "[variables('storageAccountName')]"
-        },
-        "properties": {}
+  "resources": [
+    {
+      "type": "Microsoft.Storage/storageAccounts",
+      "name": "[variables('storageAccountname')]",
+      "apiVersion": "2016-01-01",
+      "location": "[parameters('location')]",
+      "comments": "This storage account is used to associate to a batch account",
+      "sku": {
+        "name": "[parameters('storageAccountsku')]"
       },
-      {
-        "type": "Microsoft.Batch/batchAccounts",
-        "name": "[variables('batchAccountName')]",
-        "apiVersion": "2015-12-01",
-        "location": "[parameters('location')]",
-        "tags": {
-          "ObjectName": "[variables('batchAccountName')]"
-        },
-        "properties": {
-          "autoStorage": {
-            "storageAccountId": "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]"
+      "kind": "Storage",
+      "tags": {
+        "ObjectName": "[variables('storageAccountName')]"
+      },
+      "properties": {}
+    },
+    {
+      "type": "Microsoft.Batch/batchAccounts",
+      "name": "[variables('batchAccountName')]",
+      "apiVersion": "2015-12-01",
+      "location": "[parameters('location')]",
+      "tags": {
+        "ObjectName": "[variables('batchAccountName')]"
+      },
+      "properties": {
+        "autoStorage": {
+          "storageAccountId": "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]"
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Batch/batchAccounts/pools",
+      "name": "[concat(variables('batchAccountName'), '/', variables('poolName'))]",
+      "apiVersion": "2017-09-01",
+      "properties": {
+        "vmSize": "[parameters('vmSize')]",
+        "deploymentConfiguration": {
+          "virtualMachineConfiguration": {
+            "imageReference": {
+              "publisher": "[variables('vmTypes')[variables('vmOSTypeIndex')].publisher]",
+              "offer": "[variables('vmTypes')[variables('vmOSTypeIndex')].offer]",
+              "sku": "[variables('vmTypes')[variables('vmOSTypeIndex')].sku]",
+              "version": "latest"
+            },
+            "nodeAgentSkuId": "[variables('vmTypes')[variables('vmOSTypeIndex')].nodeAgentSkuId]"
           }
         },
-        "dependsOn": [
-          "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]"
-        ]
-      },
-      {
-        "type": "Microsoft.Batch/batchAccounts/pools",
-        "name": "[concat(variables('batchAccountName'), '/', variables('poolName'))]",
-        "apiVersion": "2017-09-01",
-        "properties": {
-          "vmSize": "[parameters('vmSize')]",
-          "deploymentConfiguration": {
-            "virtualMachineConfiguration": {
-              "imageReference": {
-                "publisher": "[variables('vmTypes')[variables('vmOSTypeIndex')].publisher]",
-                "offer": "[variables('vmTypes')[variables('vmOSTypeIndex')].offer]",
-                "sku": "[variables('vmTypes')[variables('vmOSTypeIndex')].sku]",
-                "version": "latest"
-              },
-              "nodeAgentSkuId": "[variables('vmTypes')[variables('vmOSTypeIndex')].nodeAgentSkuId]"
-            }
-          },
-          "scaleSettings": {
-            "fixedScale": {
-              "targetDedicatedNodes": "[variables('poolDedicatedNodes')]",
-              "targetLowPriorityNodes": "[variables('poolLowPriNodes')]"
-            }
-          },
-          "enableInterNodeCommunication": "false",
-          "networkConfiguration": {
-            "subnetId": "[variables('subnetRef')]",
-            "endpointConfiguration": {
-              "inboundNatPools": [
-                {
-                  "name": "[concat(variables('poolName'),'-endpointConfig')]",
-                  "protocol": "TCP",
-                  "backendPort": 3389,
-                  "frontendPortRangeStart": 56001,
-                  "frontendPortRangeEnd": 56254
-                }
-              ]
-            }
-          },
-          "maxTasksPerNode": 1,
-          "taskSchedulingPolicy": {
-            "nodeFillType": "Spread"
-          },
-          "userAccounts": [
-            {
-              "name": "[parameters('userUserName')]",
-              "password": "[parameters('userPassword')]",
-              "elevationLevel": "NonAdmin"
-            },
-            {
-              "name": "[parameters('adminUserName')]",
-              "password": "[parameters('adminPassword')]",
-              "elevationLevel": "Admin"
-            }
-          ]
+        "scaleSettings": {
+          "fixedScale": {
+            "targetDedicatedNodes": "[variables('poolDedicatedNodes')]",
+            "targetLowPriorityNodes": "[variables('poolLowPriNodes')]"
+          }
         },
-        "dependsOn": [
-          "[concat('Microsoft.Batch/batchAccounts/', variables('batchAccountName'))]"
+        "interNodeCommunication": "[parameters('poolInterNodeCommunication')]",
+        "networkConfiguration": {
+          "subnetId": "[variables('subnetRef')]",
+          "endpointConfiguration": "[json('null')]" 
+          
+        },
+        "maxTasksPerNode": "[parameters('maxTasksPerNode')]",
+        "taskSchedulingPolicy": {
+          "nodeFillType": "Spread"
+        },
+        "userAccounts": [
+          {
+            "name": "[parameters('userUserName')]",
+            "password": "[parameters('userPassword')]",
+            "elevationLevel": "NonAdmin"
+          },
+          {
+            "name": "[parameters('adminUserName')]",
+            "password": "[parameters('adminPassword')]",
+            "elevationLevel": "Admin"
+          }
         ]
-      }
-    ],
-    "outputs": {
-      "storageAccountName": {
-        "type": "string",
-        "value": "[variables('storageAccountName')]"
       },
-      "storageResourceId": {
-        "type": "string",
-        "value": "[variables('storageResourceId')]"
+      "dependsOn": [
+        "[concat('Microsoft.Batch/batchAccounts/', variables('batchAccountName'))]"
+      ]
+    }
+  ],
+  "outputs": {
+    "storageAccountName": {
+      "type": "string",
+      "value": "[variables('storageAccountName')]"
+    },
+    "storageResourceId": {
+      "type": "string",
+      "value": "[variables('storageResourceId')]"
 
-      },
-      "batchAccountName": {
-        "type": "string",
-        "value": "[variables('batchAccountName')]"
-      },
-      "storageObject": {
-        "type": "object",
-        "value": "[reference(resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName')))]"
-      },
-      "batchObject": {
-        "type": "object",
-        "value": "[reference(resourceId('Microsoft.Batch/batchAccounts', variables('batchAccountName')))]"
-      },
-      "keyVaultResourceId": {
-        "type": "string",
-        "value": "[variables('keyVaultResourceId')]"
-      },
-      "batchPrimaryKey": {
-        "type": "string",
-        "value": "[listKeys(variables('batchResourceId'), variables('batchApiVersion')).primary]"
-      },
-      "deploymentUri": {
-        "type": "string",
-        "value": "https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fmsproes%2Fmspro-azurerm%2Fvs-resourcegroup-project%2FbatchServiceResourceGroup%2FbatchServiceResourceGroup%2Fazuredeploy.json"
-      }
+    },
+    "batchAccountName": {
+      "type": "string",
+      "value": "[variables('batchAccountName')]"
+    },
+    "storageObject": {
+      "type": "object",
+      "value": "[reference(resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName')))]"
+    },
+    "batchObject": {
+      "type": "object",
+      "value": "[reference(resourceId('Microsoft.Batch/batchAccounts', variables('batchAccountName')))]"
+    },
+    "keyVaultResourceId": {
+      "type": "string",
+      "value": "[variables('keyVaultResourceId')]"
+    },
+    "batchPrimaryKey": {
+      "type": "string",
+      "value": "[listKeys(variables('batchResourceId'), variables('batchApiVersion')).primary]"
+    },
+    "deploymentUri": {
+      "type": "string",
+      "value": "https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fmsproes%2Fmspro-azurerm%2Fvs-resourcegroup-project%2FbatchServiceResourceGroup%2FbatchServiceResourceGroup%2Fazuredeploy.json"
+    },
+    "subnetIdIsInMySubscription": {
+      "type": "bool",
+      "value": "[variables('subnetIdIsInMySubscription')]"
+    },
+    "subnetRef": {
+      "type": "string",
+      "value": "[variables('subnetRef')]"
+    },
+    "subnetObject": {
+      "type":"object",
+      "value":"[reference(variables('subnetRef'))]"
     }
   }
+}
