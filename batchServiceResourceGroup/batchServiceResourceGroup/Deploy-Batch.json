@@ -248,6 +248,20 @@
     "vnetSubnetName_IsNotNull": "[not(equals(parameters('vnetResourceGroupName'),json('null')))]",
     "vnetParametersDetailed": "[and(and(variables('vnetResourceGroupName_IsNotNull'),variables('vnetName_IsNotNull')),variables('vnetSubnetName_IsNotNull'))]",
     "vnetID": "[resourceId(parameters('vnetResourceGroupName'), 'Microsoft.Network/virtualNetworks',parameters('vnetName'))]",
+    "batchSubnet": {
+      "IT.EU.CCC.Engineering": {
+        "Environment": "",
+        "SubscriptionName": "IT.EU.CCC.Engineering",
+        "SubscriptionId": "12168da9-ce0c-4768-af91-475b517438f6",
+        "Id": "/subscriptions/12168da9-ce0c-4768-af91-475b517438f6/resourceGroups/ivantest/providers/Microsoft.Network/virtualNetworks/PaaSIaaS/subnets/spoke"
+      },
+      "IT.EU.Labs": {
+        "Environment": "",
+        "SubscriptionName": "IT.EU.Labs",
+        "SubscriptionId": "50a00d8c-0d30-4f65-ad49-e80107df138b",
+        "Id": "/subscriptions/50a00d8c-0d30-4f65-ad49-e80107df138b/resourceGroups/dmz-lab-v3/providers/Microsoft.Network/virtualNetworks/vnet02/subnets/Spoke"
+      }
+    },
     "subnetIdProvided": "[not(equals(parameters('subnetId'),json('null')))]",
     "subnetIdIsInMySubscription": "[contains(parameters('subnetId'),subscription().id)]",
     "subnetIdOK": "[if(and(and(equals(variables('subnetIdProvided'),bool('true')),equals(variables('subnetIdIsInMySubscription'),bool('true'))),equals(variables('subnetIdProvidesSeemsOK'),bool('true'))),bool('true'),bool('false'))]",
