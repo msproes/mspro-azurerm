@@ -24,9 +24,10 @@
     },
     "keyVaultReference": {
       "type": "object",
-      "defaultValue": {"id":"/subscriptions/12168da9-ce0c-4768-af91-475b517438f6/resourceGroups/AzureBatch/providers/Microsoft.KeyVault/vaults/AzureBatchKeyVault",
-"url":"https://azurebatchkeyvault.vault.azure.net/"
-},
+      "defaultValue": {
+        "id": "",
+        "url": ""
+      },
       "metadata": {
         "description": "A reference to the Azure key vault associated with the Batch account. Only needed if pool Allocation Mode is UserSubscription."
       }
@@ -87,7 +88,7 @@
         "minLength": 3,
         "maxLength": 15,
         "metadata": {
-          "description": "User username on all VMs"
+          "description": "User account that will be created in all pool nodes"
         }
       },
 
@@ -97,7 +98,7 @@
         "minLength": 3,
         "maxLength": 15,
         "metadata": {
-          "description": "Administrator username on all VMs"
+          "description": "Administrator account that will be created in all pool nodes."
         }
       },
       "userPassword": {
@@ -187,7 +188,7 @@
       },
       "subnetId": {
         "type": "string",
-        "defaultValue": "",
+        "defaultValue": "/subscriptions/12168da9-ce0c-4768-af91-475b517438f6/resourceGroups/ivantest/providers/Microsoft.Network/virtualNetworks/PaaSIaaS/subnets/spoke",
         "metadata": {
           "description": "SubnetId to link a specific vnet to the Batch Service Pool"
         }
@@ -286,12 +287,12 @@
     "vnetSubnetName_IsNotNull": "[not(equals(parameters('vnetResourceGroupName'),json('null')))]",
     "vnetParametersDetailed": "[and(and(variables('vnetResourceGroupName_IsNotNull'),variables('vnetName_IsNotNull')),variables('vnetSubnetName_IsNotNull'))]",
     "vnetID": "[resourceId(parameters('vnetResourceGroupName'), 'Microsoft.Network/virtualNetworks',parameters('vnetName'))]",
-    "subnetIdProvided": "[greater(length('subnetId'),0)]",
+    "subnetIdProvided": "[not(equals(parameters('subnetId'),json('null')))]",
     "subnetIdIsInMySubscription": "[contains(parameters('subnetId'),subscription().id)]",
     "subnetIdOK": "[if(and(and(equals(variables('subnetIdProvided'),bool('true')),equals(variables('subnetIdIsInMySubscription'),bool('true'))),equals(variables('subnetIdProvidesSeemsOK'),bool('true'))),bool('true'),bool('false'))]",
     "subnetIdProvidesSeemsOK": "[and(contains(parameters('subnetId'),'Microsoft.Network/virtualNetworks'),contains(parameters('subnetId'),'/subnets/'))]",
     "subnetIdGenerated": "[concat(variables('vnetID'),'/subnets/',parameters('vnetSubnetName'))]",
-    "subnetRef": "[if(equals(bool('true'),variables('subnetIdOK')),parameters('subnetId'),json('null'))]",
+    "subnetRef": "[if(equals(bool('true'),variables('subnetIdOK')),parameters('subnetId'),variables('subnetIdGenerated'))]",
     "batchSubnetsBySubscription": [
       {
         "Name": "IT.EU.CCC.Engineering",
@@ -394,10 +395,11 @@
           }
         },
         "interNodeCommunication": "[parameters('poolInterNodeCommunication')]",
-        "networkConfiguration": "[if(equals(bool('true'),variables('subnetIdOK')),{
-          "subnetId": "[variables('subnetId')]",
+        "networkConfiguration": {
+          "subnetId": "[If(equals(bool('true'),variables('subnetIdOK')),parameters('subnetId'),json('null'))]",
           "endpointConfiguration": "[json('null')]"
-        },json('null'))],
+
+        },
         "maxTasksPerNode": "[parameters('poolMaxTasksPerNode')]",
         "taskSchedulingPolicy": {
           "nodeFillType": "[parameters('poolTaskSchedulingPolicy')]"
@@ -471,7 +473,7 @@
     },
     "deploymentMasterContributorUrl": {
       "type": "string",
-      "value": "https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fmsproes%2Fmspro-azurerm%2Fmaster%2FbatchServiceResourceGroup%2FbatchServiceResourceGroup%2FDeploy-Batch-Contributor.json"
+      "value": "https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fmsproes%2Fmspro-azurerm%2Fmaster%2FbatchServiceResourceGroup%2FbatchServiceResourceGroup%2FDeploy-Batch-Contributor3.json"
     },
       "subnetIdIsInMySubscription": {
         "type": "bool",
