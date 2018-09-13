@@ -165,27 +165,6 @@
           "4 - WindowsServer 2012-R2-Datacenter"
         ]
       },
-      "vnetResourceGroupName": {
-        "type": "string",
-        "defaultValue": "commonweu",
-        "metadata": {
-          "description": "Name of the resource group where the Virtual Network resides"
-        }
-      },
-      "vnetName": {
-        "type": "string",
-        "defaultValue": "commonweu-vnet",
-        "metadata": {
-          "description": "Name of the Virtual Network to be used"
-        }
-      },
-      "vnetSubnetName": {
-        "type": "string",
-        "defaultValue": "default",
-        "metadata": {
-          "description": "Name of the subnet to be used"
-        }
-      },
       "subnetId": {
         "type": "string",
         "defaultValue": "/subscriptions/12168da9-ce0c-4768-af91-475b517438f6/resourceGroups/ivantest/providers/Microsoft.Network/virtualNetworks/PaaSIaaS/subnets/spoke",
@@ -282,17 +261,10 @@
       }
     ],
     "mySubscriptionId": "[subscription().id]",
-    "vnetResourceGroupName_IsNotNull": "[not(equals(parameters('vnetResourceGroupName'),json('null')))]",
-    "vnetName_IsNotNull": "[not(equals(parameters('vnetResourceGroupName'),json('null')))]",
-    "vnetSubnetName_IsNotNull": "[not(equals(parameters('vnetResourceGroupName'),json('null')))]",
-    "vnetParametersDetailed": "[and(and(variables('vnetResourceGroupName_IsNotNull'),variables('vnetName_IsNotNull')),variables('vnetSubnetName_IsNotNull'))]",
-    "vnetID": "[resourceId(parameters('vnetResourceGroupName'), 'Microsoft.Network/virtualNetworks',parameters('vnetName'))]",
-    "subnetIdProvided": "[not(equals(parameters('subnetId'),json('null')))]",
+    "subnetIdProvided": "[greater(length(parameters('subnetId')),30)]",
     "subnetIdIsInMySubscription": "[contains(parameters('subnetId'),subscription().id)]",
     "subnetIdOK": "[if(and(and(equals(variables('subnetIdProvided'),bool('true')),equals(variables('subnetIdIsInMySubscription'),bool('true'))),equals(variables('subnetIdProvidesSeemsOK'),bool('true'))),bool('true'),bool('false'))]",
-    "subnetIdProvidesSeemsOK": "[and(contains(parameters('subnetId'),'Microsoft.Network/virtualNetworks'),contains(parameters('subnetId'),'/subnets/'))]",
-    "subnetIdGenerated": "[concat(variables('vnetID'),'/subnets/',parameters('vnetSubnetName'))]",
-    "subnetRef": "[if(equals(bool('true'),variables('subnetIdOK')),parameters('subnetId'),variables('subnetIdGenerated'))]",
+    "subnetIdProvidedSeemsOK": "[and(contains(parameters('subnetId'),'Microsoft.Network/virtualNetworks'),contains(parameters('subnetId'),'/subnets/'))]",
     "batchSubnetsBySubscription": [
       {
         "Name": "IT.EU.CCC.Engineering",
@@ -396,9 +368,8 @@
         },
         "interNodeCommunication": "[parameters('poolInterNodeCommunication')]",
         "networkConfiguration": {
-          "subnetId": "[If(equals(bool('true'),variables('subnetIdOK')),parameters('subnetId'),json('null'))]",
+          "subnetId": "[If(equals(bool('true'),variables('subnetIdProvidedSeemsOK')),parameters('subnetId'),json('null'))]",
           "endpointConfiguration": "[json('null')]"
-
         },
         "maxTasksPerNode": "[parameters('poolMaxTasksPerNode')]",
         "taskSchedulingPolicy": {
