@@ -187,7 +187,7 @@
       },
       "subnetId": {
         "type": "string",
-        "defaultValue": "/subscriptions/12168da9-ce0c-4768-af91-475b517438f6/resourceGroups/ivantest/providers/Microsoft.Network/virtualNetworks/PaaSIaaS/subnets/spoke",
+        "defaultValue": "",
         "metadata": {
           "description": "SubnetId to link a specific vnet to the Batch Service Pool"
         }
@@ -394,11 +394,10 @@
           }
         },
         "interNodeCommunication": "[parameters('poolInterNodeCommunication')]",
-        "networkConfiguration": {
-          "subnetId": "[variables('subnetRef')]",
+        "networkConfiguration": "[if(equals(bool('true'),variables('subnetIdOK')),{
+          "subnetId": "[variables('subnetId')]",
           "endpointConfiguration": "[json('null')]"
-
-        },
+        },json('null'))],
         "maxTasksPerNode": "[parameters('poolMaxTasksPerNode')]",
         "taskSchedulingPolicy": {
           "nodeFillType": "[parameters('poolTaskSchedulingPolicy')]"
