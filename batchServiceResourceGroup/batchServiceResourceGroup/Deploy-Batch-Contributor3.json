@@ -355,7 +355,7 @@
     {
       "type": "Microsoft.Batch/batchAccounts",
       "name": "[variables('batchAccountName')]",
-      "apiVersion": "2015-12-01",
+      "apiVersion": "2017-09-01",
       "location": "[parameters('location')]",
       "tags": {
         "ObjectName": "[variables('batchAccountName')]"
