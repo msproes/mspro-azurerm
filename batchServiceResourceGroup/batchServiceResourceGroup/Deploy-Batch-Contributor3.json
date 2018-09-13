@@ -24,10 +24,9 @@
     },
     "keyVaultReference": {
       "type": "object",
-      "defaultValue": {
-        "id": "",
-        "url": ""
-      },
+      "defaultValue": {"id":"/subscriptions/12168da9-ce0c-4768-af91-475b517438f6/resourceGroups/batchSv180827/providers/Microsoft.KeyVault/vaults/batchSv180827keyvault",
+"url":"https://batchsv180827keyvault.vault.azure.net/"
+},
       "metadata": {
         "description": "A reference to the Azure key vault associated with the Batch account. Only needed if pool Allocation Mode is UserSubscription."
       }
