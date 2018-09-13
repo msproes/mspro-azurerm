@@ -359,7 +359,7 @@
     },
     {
       "condition": "[greater(variables('contributorRoleCount'), 0)]",
-      "type": "[concat(variables('batchResourceType'),'/providers/roleAssignments')]",
+      "type": "Microsoft.Batch/batchAccounts/providers/roleAssignments",
       "apiVersion": "2015-07-01",
       "name": "[concat(variables('batchAccountName'), '/Microsoft.Authorization/', if(greater(variables('contributorRoleCount'),0),guid(parameters('contributorRoleEntities')[copyIndex('iterator')].Name, variables('batchAccountName')),guid('dummy')))]",
       "dependsOn": [
