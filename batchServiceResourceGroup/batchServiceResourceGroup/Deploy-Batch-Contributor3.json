@@ -291,7 +291,7 @@
     "subnetIdOK": "[if(and(and(equals(variables('subnetIdProvided'),bool('true')),equals(variables('subnetIdIsInMySubscription'),bool('true'))),equals(variables('subnetIdProvidesSeemsOK'),bool('true'))),bool('true'),bool('false'))]",
     "subnetIdProvidesSeemsOK": "[and(contains(parameters('subnetId'),'Microsoft.Network/virtualNetworks'),contains(parameters('subnetId'),'/subnets/'))]",
     "subnetIdGenerated": "[concat(variables('vnetID'),'/subnets/',parameters('vnetSubnetName'))]",
-    "subnetRef": "[if(equals(bool('true'),variables('subnetIdOK')),parameters('subnetId'),variables('subnetIdGenerated'))]",
+    "subnetRef": "[if(equals(bool('true'),variables('subnetIdOK')),parameters('subnetId'),json('null'))]",
     "batchSubnetsBySubscription": [
       {
         "Name": "IT.EU.CCC.Engineering",
